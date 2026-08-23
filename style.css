@@ -45,9 +45,13 @@ body {
     gap: 5px;
     
 }
+.sign-container h2{
+    text-align: center;
+}
+
 
 .sign-container{
-    text-align: center;
+    
     display: flex;
     padding: 10px 10px;
     background-color: red;
@@ -56,10 +60,12 @@ body {
     width: 250px;
     height: 250px;
     margin: 150px 200px;
+    justify-content: center;  
 
 }
 .sign-comp input {
     display: block;
+    width: 205px;
     margin: 0 auto 15px auto;
 }
 
@@ -70,4 +76,10 @@ body {
 
     width: 100%;
     color:white;
+}
+
+.sign-comp label {
+    display: block;
+    width: 205px;
+    margin: 0 auto 8px auto;
 }
