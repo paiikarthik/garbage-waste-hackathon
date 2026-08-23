@@ -1,0 +1,73 @@
+*{
+    padding: 0;
+    margin: 0;
+}
+
+nav{
+
+    background-color: rgb(206, 203, 201);
+    padding: 10px 20px;
+}
+
+
+body {
+    background:rgb(38, 14, 2);
+}
+.nav-con{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+}
+
+.logo{
+    font-size: 25px;
+    color:  rgb(84, 7, 7);
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-weight: 400;
+
+}
+
+.links{
+    margin: 0;
+  
+}
+.link{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.link a{
+    text-decoration: none;
+    color: rgb(84, 7, 7);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    
+}
+
+.sign-container{
+    text-align: center;
+    display: flex;
+    padding: 10px 10px;
+    background-color: red;
+    border: 2px solid black;
+    border-radius: 10px;
+    width: 250px;
+    height: 250px;
+    margin: 150px 200px;
+
+}
+.sign-comp input {
+    display: block;
+    margin: 0 auto 15px auto;
+}
+
+.sign-comp h2{
+    margin-bottom: 20px;
+}
+.sign-comp{
+
+    width: 100%;
+    color:white;
+}
