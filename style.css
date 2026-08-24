@@ -58,7 +58,7 @@ body {
     border: 2px solid black;
     border-radius: 10px;
     width: 250px;
-    height: 250px;
+    height: 300px;
     margin: 150px 200px;
     justify-content: center;  
 
@@ -82,4 +82,15 @@ body {
     display: block;
     width: 205px;
     margin: 0 auto 8px auto;
+}
+
+input{
+    border: 2px solid black;
+    border-radius: 150px;
+    width: 250;
+    height: 25px;
+}
+
+input:hover{
+    border: 2px solid black;
 }
