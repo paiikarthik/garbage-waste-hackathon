@@ -69,6 +69,7 @@ body {
 
 .sign-container h2 {
     text-align: center;
+    color: green;
 }
 
 
@@ -89,11 +90,16 @@ body {
     display: block;
      width: 85%;
      height: 30px;
+     padding: 10px;
     margin: 0 auto 15px auto;
 }
 
 .sign-comp h2 {
     margin-bottom: 20px;
+}
+
+#pyar{
+    width: 250px;
 }
 
 .sign-comp {
@@ -148,4 +154,9 @@ input:hover {
 
 .sign-comp button:hover {
     background-color: rgb(120, 10, 10);
+}
+
+.sign-container h2 span{
+    color: green;
+    
 }
