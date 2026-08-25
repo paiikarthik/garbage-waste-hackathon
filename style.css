@@ -1,98 +1,121 @@
-*{
+* {
     padding: 0;
     margin: 0;
 }
 
-nav{
+nav {
 
-    background-color: rgb(206, 203, 201);
+    background-color: rgb(255, 255, 255);
     padding: 10px 20px;
 }
 
 
 body {
-    background:rgb(38, 14, 2);
+    background: rgb(4, 38, 2);
 }
-.nav-con{
+
+.nav-con {
     display: flex;
     align-items: center;
     justify-content: space-between;
 
 }
-
-.logo{
+#sec {
+    display: flex;
+    justify-content: flex-end;
+    padding: 150px 100px 0 0;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-size: 25px;
-    color:  rgb(84, 7, 7);
-    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    color: green;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     font-weight: 400;
-
 }
 
-.links{
+.logo img {
+    width: 40px;
+    height: auto;
+}
+
+.links {
     margin: 0;
 
 }
-.link{
+
+.link {
     display: flex;
     align-items: center;
     gap: 20px;
 }
-.link a{
+
+.link a {
     text-decoration: none;
-    color: rgb(84, 7, 7);
+    color:green;
     display: flex;
+    font-weight: 600;
     align-items: center;
     gap: 5px;
 
 }
-.sign-container h2{
+
+.sign-container h2 {
     text-align: center;
 }
 
 
-.sign-container{
-
+.sign-container {
     display: flex;
     padding: 20px 10px;
-    background-color: red;
+    background-color:white;
     border: 2px solid black;
     border-radius: 10px;
-    width: 250px;
+    width: 350px;
     min-height: 300px;
     height: auto;
-    margin: 150px 200px;
     justify-content: center;
 
 }
+
 .sign-comp input {
     display: block;
-    width: 205px;
+     width: 85%;
     margin: 0 auto 15px auto;
 }
 
-.sign-comp h2{
+.sign-comp h2 {
     margin-bottom: 20px;
 }
-.sign-comp{
 
+.sign-comp {
     width: 100%;
-    color:white;
+}
+
+.sign-comp p{
+    margin-top: 6px;
+    font-weight: bold;
+    text-align: center;
 }
 
 .sign-comp label {
     display: block;
-    width: 205px;
+    width: 85%;
     margin: 0 auto 8px auto;
 }
 
-input{
+
+input {
     border: 2px solid black;
     border-radius: 150px;
     width: 205px;
     height: 25px;
+    box-sizing: border-box;
+    padding: 0 15px; 
 }
 
-input:hover{
+input:hover {
     border: 2px solid black;
 }
 
@@ -113,5 +136,3 @@ input:hover{
 .sign-comp button:hover {
     background-color: rgb(120, 10, 10);
 }
-
-
