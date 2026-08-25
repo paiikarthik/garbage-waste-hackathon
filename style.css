@@ -17,7 +17,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    
+
 }
 
 .logo{
@@ -30,7 +30,7 @@ body {
 
 .links{
     margin: 0;
-  
+
 }
 .link{
     display: flex;
@@ -43,7 +43,7 @@ body {
     display: flex;
     align-items: center;
     gap: 5px;
-    
+
 }
 .sign-container h2{
     text-align: center;
@@ -51,16 +51,17 @@ body {
 
 
 .sign-container{
-    
+
     display: flex;
-    padding: 10px 10px;
+    padding: 20px 10px;
     background-color: red;
     border: 2px solid black;
     border-radius: 10px;
     width: 250px;
-    height: 300px;
+    min-height: 300px;
+    height: auto;
     margin: 150px 200px;
-    justify-content: center;  
+    justify-content: center;
 
 }
 .sign-comp input {
@@ -87,10 +88,30 @@ body {
 input{
     border: 2px solid black;
     border-radius: 150px;
-    width: 250;
+    width: 205px;
     height: 25px;
 }
 
 input:hover{
     border: 2px solid black;
 }
+
+.sign-comp button {
+    width: 85%;
+    display: block;
+    margin: 15px auto 0 auto;
+    padding: 8px 24px;
+    border: 2px solid black;
+    border-radius: 150px;
+    background-color: rgb(84, 7, 7);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.sign-comp button:hover {
+    background-color: rgb(120, 10, 10);
+}
+
+
