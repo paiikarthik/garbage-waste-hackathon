@@ -1,1 +1,1 @@
-Garbage Waste Hackathon By Unstop
+HACKATHON to Solve India's Garbage Problem By Wonksknow India Technologies Pvt Ltd
