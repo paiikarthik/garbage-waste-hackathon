@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home,login" />
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+* {
+    padding: 0;
+    margin: 0;
+}
+
+nav {
+
+    background-color: rgb(255, 255, 255);
+    padding: 10px 20px;
+}
+
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: green;
+}
+
+.nav-con {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+}
+#sec {
+    display: flex;
+    justify-content: flex-end;
+    padding: 150px 100px 0 0;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 25px;
+    color: green;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-weight: 400;
+}
+
+.logo img {
+    width: 40px;
+    height: auto;
+}
+
+.links {
+    margin: 0;
+
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.link a {
+    text-decoration: none;
+    color:green;
+    display: flex;
+    font-weight: 600;
+    align-items: center;
+    gap: 5px;
+}
+
+#sidebar{
+    display:flex;
+    background: brown;
+    width: 150px;
+    height: auto;
+}
+
+#side a{
+    color: black;
+    text-decoration: none;
+    margin-bottom: 20px;
+}
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-con">
+       <div class="logo"><img src="images/bucket.png" alt="">EcoTrack</div> 
+       <div class="links">
+        <div class="link">
+            <a href=""> <span class="material-symbols-outlined">home</span>Home</a>
+            <a href="login.html"><span class="material-symbols-outlined">login</span>Login</a>
+        </div>
+       </div>
+        </div>
+    </nav>
+
+    <section id="sidebar">
+        <div id="side">
+            <a href="">Home</a>
+            <a href="">Post</a>
+            <a href="">Groups</a>
+            <a href="">You</a>
+        </div>
+    </section>
+</body>
+</html>
