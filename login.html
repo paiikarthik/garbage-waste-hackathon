@@ -28,16 +28,16 @@
 
         <div class="sign-comp">
              <h2>Login Now <span class="material-symbols-outlined">nest_eco_leaf</span> </h2>
-              <form action=""> 
+              <form action="" id="loginForm"> 
            
 
              <label for="email">Enter Your Email</label>
-             <input type="email" name="email">
+             <input type="email" name="email" id="email" required>
 
 
              <label for="pass">Enter Password</label>
-             <input type="password" name="pass">
-             <p id="pyar">Forgot password? <a href=""> Click Here</a></p>
+             <input type="password" name="pass" id="pass" required>
+             <p id="pyar">Forgot password? <a href="" id="forgotPassword"> Click Here</a></p>
 
            <button>Submit</button>
            <p>or</p>
@@ -51,5 +51,164 @@
 
     </div>
 </section>
+
+<script>
+    // Import Firebase functions
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    GoogleAuthProvider,
+    signInWithPopup,
+    sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+
+//Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBl3f2IdW8reYSagNrftzXajeq-CTJHYTY",
+    authDomain: "ecotrack-cd381.firebaseapp.com",
+    projectId: "ecotrack-cd381",
+    storageBucket: "ecotrack-cd381.firebasestorage.app",
+    messagingSenderId: "259113016797",
+    appId: "1:259113016797:web:f1e681e829f873fff3ea34"
+};
+
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+
+// Initialize Firebase Authentication
+const auth = getAuth(app);
+
+// EMAIL + PASSWORD LOGIN
+const loginForm = document.getElementById("loginForm");
+
+loginForm.addEventListener("submit", async (event) => {
+
+    // Prevent page refresh
+    event.preventDefault();
+
+    // Get values from input fields
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("pass").value;
+
+    try {
+
+        // Login using Firebase
+        const userCredential = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        // Get logged-in user
+        const user = userCredential.user;
+
+        console.log("Login successful:", user);
+
+        alert("Login successful!");
+
+        // Go to dashboard
+        window.location.href = "dashboard.html";
+
+    } catch (error) {
+
+        console.error(error);
+
+        // Display Firebase error
+        if (error.code === "auth/invalid-credential") {
+            alert("Incorrect email or password.");
+        }
+        else if (error.code === "auth/user-not-found") {
+            alert("No account found with this email.");
+        }
+        else if (error.code === "auth/wrong-password") {
+            alert("Incorrect password.");
+        }
+        else if (error.code === "auth/invalid-email") {
+            alert("Please enter a valid email.");
+        }
+        else {
+            alert("Login failed: " + error.message);
+        }
+    }
+});
+
+
+
+
+const googleButton = document.getElementById("googleSignIn");
+
+googleButton.addEventListener("click", async () => {
+
+    // Create Google provider
+    const provider = new GoogleAuthProvider();
+
+    try {
+
+        // Open Google login popup
+        const result = await signInWithPopup(auth, provider);
+
+        // Get logged-in Google user
+        const user = result.user;
+
+        console.log("Google login successful:", user);
+
+        alert("Google login successful!");
+
+        // Go to dashboard
+        window.location.href = "main.html";
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Google login failed: " + error.message);
+    }
+});
+
+
+
+const forgotPassword = document.getElementById("forgotPassword");
+
+forgotPassword.addEventListener("click", async (event) => {
+
+    event.preventDefault();
+
+    // Get email from input
+    const email = document.getElementById("email").value;
+
+    // Check whether email was entered
+    if (!email) {
+        alert("Please enter your email first.");
+        return;
+    }
+
+    try {
+
+        // Send password reset email
+        await sendPasswordResetEmail(auth, email);
+
+        alert("Password reset email sent! Check your inbox.");
+
+    } catch (error) {
+
+        console.error(error);
+
+        if (error.code === "auth/user-not-found") {
+            alert("No account found with this email.");
+        }
+        else if (error.code === "auth/invalid-email") {
+            alert("Please enter a valid email.");
+        }
+        else {
+            alert("Error: " + error.message);
+        }
+    }
+});
+</script>
 </body>
 </html>
