@@ -28,7 +28,7 @@
 
         <div class="sign-comp">
              <h2>Create Account</h2>
-              <form action=""> 
+              <form action="" id="signupForm"> 
              <label for="name">Enter Your Name</label>
              <input type="text" name="name"> 
 
@@ -51,8 +51,138 @@
 
     </div>
 </section>
-    
+<script type="module">
+// Import the functions you need from the SDKs you need
+     import {
+        getAuth,
+        createUserWithEmailAndPassword,
+        GoogleAuthProvider,
+        signInWithPopup,
+        updateProfile
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
 
+//connecting website with firebase
+ import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+// TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBl3f2IdW8reYSagNrftzXajeq-CTJHYTY",
+    authDomain: "ecotrack-cd381.firebaseapp.com",
+    projectId: "ecotrack-cd381",
+    storageBucket: "ecotrack-cd381.firebasestorage.app",
+    messagingSenderId: "259113016797",
+    appId: "1:259113016797:web:f1e681e829f873fff3ea34"
+  };
+
+  // Initialize Firebase using above info
+  const app = initializeApp(firebaseConfig);
+
+
+  const auth=getAuth(app);
+
+
+  const signupForm=document.getElementById("signupForm");
+
+  signupForm.addEventListener("submit", async(event)=>{
+
+        // Prevent page from refreshing when submitting
+        event.preventDefault();
+
+        const name = document.getElementById("name").value;
+
+        const email = document.getElementById("email").value;
+
+        const password = document.getElementById("pass").value;
+
+           try {
+
+            // Create Firebase account
+            const userCredential =
+                await createUserWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+
+            // Get the newly created user
+            const user = userCredential.user;
+
+
+            // Add user's name to Firebase profile
+            await updateProfile(user, {
+                displayName: name
+            });
+
+
+            console.log("Account created:", user);
+
+            alert("Account created successfully!");
+
+
+            // Redirect to home page
+            window.location.href = "index.html";
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(error.message);
+
+        }
+
+    });
+
+
+    // --------------------------------------------------
+    // 8. Google Sign In
+    // --------------------------------------------------
+
+    const googleButton =
+        document.getElementById("googleSignIn");
+
+
+    googleButton.addEventListener("click", async () => {
+
+        try {
+
+            // Create Google provider
+            const provider = new GoogleAuthProvider();
+
+
+            // Open Google login popup
+            const result =
+                await signInWithPopup(auth, provider);
+
+
+            // Get logged-in user
+            const user = result.user;
+
+
+            console.log("Google user:", user);
+
+            alert("Google login successful!");
+
+
+            // Redirect
+            window.location.href = "index.html";
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(error.message);
+
+        }
+
+  });
+
+</script>    
 </body>
 </html>
