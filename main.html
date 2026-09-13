@@ -136,7 +136,7 @@ body {
 }
 
 .modal{
-    display: ;
+    display:none ;
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -169,7 +169,7 @@ body {
 }
 
 
-#closebtn{
+#closeBtn{
     font-size: 30px;
     cursor: pointer;
 }
@@ -260,7 +260,7 @@ body {
                        <span class="material-symbols-outlined">logout</span>
                        <span>Logout</span>
                 </a>
-            </div>>
+            </div>
         </div>   
     </section>
 
@@ -272,13 +272,33 @@ body {
             <span id="closeBtn">&times;</span>
         </div>
          <input type="text"  width="300px" placeholder="Enter a Post Title">
-        <textarea name=""  id="postText" placeholder="Create New POst"></textarea>
-
+        <textarea name=""  id="postText" placeholder="Create New POst"></textarea>     
         <input type="file" id="postImage" accept="image/*">
-
         <button id="postBtn">Post</button>
     </div>
-    
 </div>
 </body>
+
+
+<script>
+    const createBtn=document.getElementById("createBtn");
+    const postModal=document.getElementById("postModal");
+    const closeBtn=document.getElementById("closeBtn");
+
+    createBtn.addEventListener("click",function(){
+        event.preventDefault();
+
+        postModal.style.display="flex";
+    });
+
+    closeBtn.addEventListener("click",function(){
+        postModal.style.display="none";
+    });
+
+    postModal.addEventListener("click",function(event){
+        if(event.target==postModal){
+            postModal.style.display="none";
+        }
+    })
+</script>
 </html>
