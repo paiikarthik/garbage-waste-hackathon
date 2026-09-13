@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main Page</title>
-     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home,login" />
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home,login,location_on" />
      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -210,6 +210,30 @@ body {
     border: none;
     outline: none;
 }
+
+.location-box{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    border: 1px solid #d6e2d7;
+    border-radius: 8px;
+    padding: 10px;
+    background: #f3f7f3;
+}
+
+.location-box span{
+    color: green;
+    font-size: 24px;
+}
+
+.location-box input{
+    width: 100%;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: 16px;
+}
 </style>
 </head>
 <body>
@@ -282,7 +306,13 @@ body {
            
             <span id="closeBtn">&times;</span>
         </div>
-         <input type="text"  id="postTitle" placeholder="Enter a Post Title">
+        <input type="text"  id="postTitle" placeholder="Enter a Post Title">
+
+         <div class="location-box">
+            <span class="material-symbols-outlined">location_on</span>
+            <input type="text" name="" id="postLocation" placeholder="Add location">
+        </div>
+        
         <textarea name=""  id="postText" placeholder="Create New POst"></textarea>     
         <input type="file" id="postImage" accept="image/*">
         <button id="postBtn">Post</button>
@@ -295,6 +325,8 @@ a
     const createBtn=document.getElementById("createBtn");
     const postModal=document.getElementById("postModal");
     const closeBtn=document.getElementById("closeBtn");
+    const postBtn=document.getElementById("postBtn");
+
 
     createBtn.addEventListener("click",function(){
         event.preventDefault();
@@ -311,5 +343,6 @@ a
             postModal.style.display="none";
         }
     });
+
 </script>
 </html>
