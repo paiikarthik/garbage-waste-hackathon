@@ -199,6 +199,17 @@ body {
     font-size: 16px;
     cursor: pointer;
 }
+
+#postTitle{
+    width: 100%;
+    font-size: 28px;
+    font-weight: bold;
+    padding: 12px;
+    margin-top: 20px;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+}
 </style>
 </head>
 <body>
@@ -271,14 +282,14 @@ body {
            
             <span id="closeBtn">&times;</span>
         </div>
-         <input type="text"  width="300px" placeholder="Enter a Post Title">
+         <input type="text"  id="postTitle" placeholder="Enter a Post Title">
         <textarea name=""  id="postText" placeholder="Create New POst"></textarea>     
         <input type="file" id="postImage" accept="image/*">
         <button id="postBtn">Post</button>
     </div>
 </div>
 </body>
-
+a
 
 <script>
     const createBtn=document.getElementById("createBtn");
@@ -299,6 +310,6 @@ body {
         if(event.target==postModal){
             postModal.style.display="none";
         }
-    })
+    });
 </script>
 </html>
