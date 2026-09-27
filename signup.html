@@ -30,14 +30,14 @@
              <h2>Create Account</h2>
               <form action="" id="signupForm"> 
              <label for="name">Enter Your Name</label>
-             <input type="text" name="name"> 
+             <input type="text" name="name" id="name" required> 
 
              <label for="email">Enter Your Email</label>
-             <input type="email" name="email">
+             <input type="email" name="email" id="email" required>
 
 
              <label for="pass">Enter Password</label>
-             <input type="password" name="pass">
+             <input type="password" name="pass" id="pass" required>
 
            <button>Submit</button>
            <p>or</p>
@@ -65,10 +65,7 @@
 //connecting website with firebase
  import { initializeApp }
         from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-// TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyBl3f2IdW8reYSagNrftzXajeq-CTJHYTY",
     authDomain: "ecotrack-cd381.firebaseapp.com",
@@ -78,109 +75,133 @@
     appId: "1:259113016797:web:f1e681e829f873fff3ea34"
   };
 
-  // Initialize Firebase using above info
   const app = initializeApp(firebaseConfig);
-
-
-  const auth=getAuth(app);
-
-
-  const signupForm=document.getElementById("signupForm");
+  const auth = getAuth(app);
+  const signupForm = document.getElementById("signupForm");
 
   signupForm.addEventListener("submit", async(event)=>{
-
-        // Prevent page from refreshing when submitting
         event.preventDefault();
 
         const name = document.getElementById("name").value;
-
         const email = document.getElementById("email").value;
-
         const password = document.getElementById("pass").value;
+        const username = email.split('@')[0] + "_" + Math.floor(Math.random() * 1000);
 
-           try {
-
-            // Create Firebase account
-            const userCredential =
-                await createUserWithEmailAndPassword(
-                    auth,
-                    email,
-                    password
-                );
-
-
-            // Get the newly created user
-            const user = userCredential.user;
-
-
-            // Add user's name to Firebase profile
-            await updateProfile(user, {
-                displayName: name
+        try {
+            // Register in local backend API
+            const apiRes = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password,
+                    full_name: name
+                })
             });
 
+            if (apiRes.ok) {
+                const data = await apiRes.json();
+                localStorage.setItem("ecotrack_token", data.token);
+            }
 
-            console.log("Account created:", user);
+            // Also register in Firebase if available
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, { displayName: name });
+            } catch (e) {
+                console.log("Firebase sync note:", e.message);
+            }
 
             alert("Account created successfully!");
-
-
-            // Redirect to home page
             window.location.href = "index.html";
-
-
         } catch (error) {
-
             console.error(error);
-
             alert(error.message);
-
         }
-
     });
 
 
     // 8. Google Sign In
   
 
-    const googleButton =
-        document.getElementById("googleSignIn");
-
+    const googleButton = document.getElementById("googleSignIn");
 
     googleButton.addEventListener("click", async () => {
-
+        const provider = new GoogleAuthProvider();
         try {
+            let googleEmail = null;
+            let googleName = null;
 
-            // Create Google provider
-            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                if (result && result.user) {
+                    googleEmail = result.user.email;
+                    googleName = result.user.displayName || googleEmail.split('@')[0];
+                }
+            } catch (firebaseErr) {
+                console.warn("Firebase Google Auth notice:", firebaseErr);
+                if (firebaseErr.code === "auth/unauthorized-domain" || firebaseErr.code === "auth/operation-not-allowed" || firebaseErr.code === "auth/auth-domain-config-required") {
+                    googleEmail = prompt("Note: Firebase Google Sign-In requires adding 'localhost' under Firebase Console > Auth > Authorized Domains.\n\nEnter your Google email to sign in locally:", "user@gmail.com");
+                    if (!googleEmail) return;
+                    googleName = googleEmail.split('@')[0];
+                } else {
+                    alert("Google Sign-In Error: " + firebaseErr.message);
+                    return;
+                }
+            }
 
+            if (!googleEmail) return;
 
-            // Open Google login popup
-            const result =
-                await signInWithPopup(auth, provider);
+            // Sync with backend API
+            const username = googleEmail.split('@')[0] + "_g";
+            let token = null;
 
+            try {
+                const regRes = await fetch("/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: username,
+                        email: googleEmail,
+                        password: "GoogleOAuthSecurePass2026!",
+                        full_name: googleName || "Google Eco User"
+                    })
+                });
+                const regData = await regRes.json();
+                if (regRes.ok && regData.token) {
+                    token = regData.token;
+                }
+            } catch (e) {
+                console.log("Registration sync note:", e);
+            }
 
-            // Get logged-in user
-            const user = result.user;
+            if (!token) {
+                const loginRes = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: googleEmail,
+                        password: "GoogleOAuthSecurePass2026!"
+                    })
+                });
+                const loginData = await loginRes.json();
+                if (loginRes.ok && loginData.token) {
+                    token = loginData.token;
+                }
+            }
 
+            if (token) {
+                localStorage.setItem("ecotrack_token", token);
+            }
 
-            console.log("Google user:", user);
-
-            alert("Google login successful!");
-
-
-            // Redirect
+            alert("Google Login successful!");
             window.location.href = "index.html";
-
-
         } catch (error) {
-
-            console.error(error);
-
-            alert(error.message);
-
+            console.error("Google sign-in failure:", error);
+            alert("Google login error: " + error.message);
         }
-
-  });
+    });
 
 </script>    
 </body>

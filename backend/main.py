@@ -1146,23 +1146,39 @@ def admin_toggle_block_user(user_id: int, admin_user: dict = Depends(get_admin_u
 # --- SPA Public Frontend Routing & Root Fallback ---
 
 @app.get("/")
+@app.get("/index")
+@app.get("/index.html")
 def read_root():
     index_file = BASE_DIR / "index.html"
     if index_file.exists():
         return FileResponse(index_file)
     return {"message": "EcoTrack API is running!"}
 
+@app.get("/login")
 @app.get("/login.html")
 def read_login():
     return FileResponse(BASE_DIR / "login.html")
 
+@app.get("/signup")
 @app.get("/signup.html")
 def read_signup():
     return FileResponse(BASE_DIR / "signup.html")
 
+@app.get("/main")
 @app.get("/main.html")
-def read_main():
-    return FileResponse(BASE_DIR / "main.html")
+@app.get("/dashboard")
+@app.get("/feed")
+@app.get("/reports")
+@app.get("/events")
+@app.get("/map")
+@app.get("/leaderboard")
+@app.get("/profile")
+@app.get("/my-activity")
+@app.get("/admin")
+@app.get("/post/{post_id}")
+@app.get("/event/{event_id}")
+def read_main_spa(post_id: Optional[str] = None, event_id: Optional[str] = None):
+    return FileResponse(BASE_DIR / "index.html")
 
 @app.get("/style.css")
 def read_css():

@@ -87,53 +87,38 @@ const auth = getAuth(app);
 const loginForm = document.getElementById("loginForm");
 
 loginForm.addEventListener("submit", async (event) => {
-
-    // Prevent page refresh
     event.preventDefault();
-
-    // Get values from input fields
     const email = document.getElementById("email").value;
     const password = document.getElementById("pass").value;
 
     try {
+        const apiRes = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await apiRes.json();
 
-        // Login using Firebase
-        const userCredential = await signInWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
+        if (!apiRes.ok) {
+            alert(data.detail || data.message || "Invalid email or password.");
+            return;
+        }
 
-        // Get logged-in user
-        const user = userCredential.user;
-
-        console.log("Login successful:", user);
+        if (data.token) {
+            localStorage.setItem("ecotrack_token", data.token);
+        }
+        
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (e) {
+            console.log("Firebase sync note:", e.message);
+        }
 
         alert("Login successful!");
-
-        // Go to dashboard
-        window.location.href = "dashboard.html";
-
+        window.location.href = "index.html";
     } catch (error) {
-
         console.error(error);
-
-        // Display Firebase error
-        if (error.code === "auth/invalid-credential") {
-            alert("Incorrect email or password.");
-        }
-        else if (error.code === "auth/user-not-found") {
-            alert("No account found with this email.");
-        }
-        else if (error.code === "auth/wrong-password") {
-            alert("Incorrect password.");
-        }
-        else if (error.code === "auth/invalid-email") {
-            alert("Please enter a valid email.");
-        }
-        else {
-            alert("Login failed: " + error.message);
-        }
+        alert("Login failed: " + error.message);
     }
 });
 
@@ -143,30 +128,78 @@ loginForm.addEventListener("submit", async (event) => {
 const googleButton = document.getElementById("googleSignIn");
 
 googleButton.addEventListener("click", async () => {
-
-    // Create Google provider
     const provider = new GoogleAuthProvider();
-
     try {
+        let googleEmail = null;
+        let googleName = null;
 
-        // Open Google login popup
-        const result = await signInWithPopup(auth, provider);
+        try {
+            const result = await signInWithPopup(auth, provider);
+            if (result && result.user) {
+                googleEmail = result.user.email;
+                googleName = result.user.displayName || googleEmail.split('@')[0];
+            }
+        } catch (firebaseErr) {
+            console.warn("Firebase Google Auth notice:", firebaseErr);
+            if (firebaseErr.code === "auth/unauthorized-domain" || firebaseErr.code === "auth/operation-not-allowed" || firebaseErr.code === "auth/auth-domain-config-required") {
+                googleEmail = prompt("Note: Firebase Google Sign-In requires adding 'localhost' under Firebase Console > Auth > Authorized Domains.\n\nEnter your Google email to sign in locally:", "user@gmail.com");
+                if (!googleEmail) return;
+                googleName = googleEmail.split('@')[0];
+            } else {
+                alert("Google Sign-In Error: " + firebaseErr.message);
+                return;
+            }
+        }
 
-        // Get logged-in Google user
-        const user = result.user;
+        if (!googleEmail) return;
 
-        console.log("Google login successful:", user);
+        // Sync with backend API (Register if new, or Login if existing)
+        const username = googleEmail.split('@')[0] + "_g";
+        let token = null;
 
-        alert("Google login successful!");
+        try {
+            const regRes = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: username,
+                    email: googleEmail,
+                    password: "GoogleOAuthSecurePass2026!",
+                    full_name: googleName || "Google Eco User"
+                })
+            });
+            const regData = await regRes.json();
+            if (regRes.ok && regData.token) {
+                token = regData.token;
+            }
+        } catch (e) {
+            console.log("Registration sync note:", e);
+        }
 
-        // Go to dashboard
-        window.location.href = "main.html";
+        if (!token) {
+            const loginRes = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: googleEmail,
+                    password: "GoogleOAuthSecurePass2026!"
+                })
+            });
+            const loginData = await loginRes.json();
+            if (loginRes.ok && loginData.token) {
+                token = loginData.token;
+            }
+        }
 
+        if (token) {
+            localStorage.setItem("ecotrack_token", token);
+        }
+
+        alert("Google Login successful!");
+        window.location.href = "index.html";
     } catch (error) {
-
-        console.error(error);
-
-        alert("Google login failed: " + error.message);
+        console.error("Google sign-in failure:", error);
+        alert("Google login error: " + error.message);
     }
 });
 

@@ -1,4 +1,4 @@
-/* EcoTrack Modern Environmental Theme Styles */
+/* EcoTrack Modern Environmental Theme & Auth Page Styles */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
@@ -21,14 +21,195 @@
 }
 
 body {
-  background-color: #f8faf9;
+  background-color: #f4f7f5;
   color: var(--text-main);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  margin: 0;
 }
 
-/* Scrollbar styling */
+/* --- Login & Signup Page Styles (for login.html & signup.html) --- */
+nav {
+  background-color: #ffffff;
+  padding: 12px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.nav-con {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 24px;
+  color: #16a34a;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.logo img {
+  width: 36px;
+  height: auto;
+}
+
+.links {
+  margin: 0;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.link a {
+  text-decoration: none;
+  color: #15803d;
+  display: flex;
+  font-weight: 600;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  transition: color 0.2s;
+}
+
+.link a:hover {
+  color: #166534;
+}
+
+#sec {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 70px);
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #102617 0%, #16a34a 100%);
+}
+
+.sign-container {
+  width: 100%;
+  max-width: 440px;
+}
+
+.sign-comp {
+  background: #ffffff;
+  padding: 36px 30px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.sign-comp h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f291e;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sign-comp form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sign-comp label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sign-comp input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sign-comp input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.sign-comp button[type="submit"], 
+.sign-comp button:not([type="button"]) {
+  width: 100%;
+  padding: 14px;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  margin-top: 8px;
+}
+
+.sign-comp button[type="submit"]:hover, 
+.sign-comp button:not([type="button"]):hover {
+  background: #15803d;
+}
+
+.google-btn {
+  width: 100%;
+  padding: 12px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.google-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.sign-comp p {
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.sign-comp p a, #pyar a {
+  color: #16a34a;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sign-comp p a:hover, #pyar a:hover {
+  text-decoration: underline;
+}
+
+#pyar {
+  font-size: 13px;
+  text-align: right;
+  margin-top: -6px;
+  margin-bottom: 4px;
+}
+
+/* --- Platform SPA Styles (for index.html & main.html) --- */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -39,11 +220,7 @@ body {
   background: #cbd5e1;
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
 
-/* Navigation bar */
 .app-header {
   position: sticky;
   top: 0;
@@ -67,18 +244,11 @@ body {
   text-decoration: none;
 }
 
-.brand-logo img {
-  width: 32px;
-  height: 32px;
-}
-
-/* Layout container */
 .app-container {
   display: flex;
   flex: 1;
 }
 
-/* Sidebar */
 .app-sidebar {
   width: 250px;
   background: #0f2619;
@@ -117,7 +287,6 @@ body {
   font-size: 1.35rem;
 }
 
-/* Main Content Area */
 .app-main {
   flex: 1;
   padding: 1.5rem 2rem;
@@ -126,7 +295,6 @@ body {
   width: 100%;
 }
 
-/* Metric Cards */
 .stat-card {
   background: #ffffff;
   border-radius: 0.75rem;
@@ -138,17 +306,6 @@ body {
   gap: 1rem;
 }
 
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-}
-
-/* Status Badges */
 .badge-status {
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
@@ -164,7 +321,6 @@ body {
 .status-Resolved { background: #dcfce7; color: #166534; }
 .status-Rejected { background: #f3f4f6; color: #4b5563; }
 
-/* Modals */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -201,7 +357,6 @@ body {
   transform: translateY(0);
 }
 
-/* Map Container */
 #leaflet-map {
   height: 520px;
   width: 100%;
@@ -209,7 +364,6 @@ body {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* Toast Notification */
 .toast-container {
   position: fixed;
   bottom: 1.5rem;
@@ -230,15 +384,8 @@ body {
   align-items: center;
   gap: 0.75rem;
   font-size: 0.9rem;
-  animation: slideIn 0.3s ease;
 }
 
-@keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-/* Responsive Rules */
 @media (max-width: 768px) {
   .app-sidebar {
     position: fixed;
@@ -256,9 +403,6 @@ body {
     flex-direction: row;
     justify-content: space-around;
     width: 100%;
-  }
-  .sidebar-bottom {
-    display: none;
   }
   .nav-link span:not(.material-symbols-outlined) {
     display: none;

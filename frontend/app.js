@@ -1,7 +1,8 @@
 /**
  * EcoTrack Platform Frontend Application Engine
- * Handles SPA Routing, REST API Calls, State Management, Map Rendering,
- * AI Waste Classification, Post Sharing, Cleanup Event Registration, and Admin Panel.
+ * Handles SPA Routing, REST API Calls, State Management, Leaflet Map Rendering,
+ * AI Waste Classification, Post Sharing, Cleanup Event Registration, Profile Views,
+ * Activity Logs, Notifications, and Admin Panel.
  */
 
 const API_BASE = "";
@@ -11,6 +12,7 @@ const state = {
   token: localStorage.getItem("ecotrack_token") || null,
   user: null,
   activeView: "dashboard",
+  activeParam: null,
   reports: [],
   posts: [],
   events: [],
@@ -25,7 +27,7 @@ const state = {
 function showToast(message, type = "success") {
   const container = document.getElementById("toast-container") || createToastContainer();
   const toast = document.createElement("div");
-  toast.className = `toast ${type === 'error' ? 'bg-red-900' : 'bg-emerald-900'} text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 border border-emerald-700`;
+  toast.className = `toast ${type === 'error' ? 'bg-red-900 border-red-700' : 'bg-emerald-900 border-emerald-700'} text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 border`;
   toast.innerHTML = `
     <span class="material-symbols-outlined">${type === 'error' ? 'error' : 'check_circle'}</span>
     <span>${message}</span>
@@ -65,7 +67,7 @@ async function apiFetch(endpoint, options = {}) {
     if (response.status === 401) {
       logoutUser();
     }
-    throw new Error(data.detail || data.message || "An unexpected error occurred.");
+    throw new Error(data.detail || data.message || "An error occurred.");
   }
   return data;
 }
@@ -81,7 +83,7 @@ async function checkAuth() {
     state.user = user;
     updateUIAuth();
   } catch (err) {
-    console.error("Auth failed:", err.message);
+    console.error("Auth check failed:", err.message);
     logoutUser();
   }
 }
@@ -131,8 +133,8 @@ function updateUIAuth() {
     if (authNav) {
       authNav.innerHTML = `
         <div class="flex items-center gap-2">
-          <button onclick="openModal('loginModal')" class="px-4 py-2 text-emerald-700 font-semibold hover:bg-emerald-50 rounded-lg">Login</button>
-          <button onclick="openModal('signupModal')" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 shadow-sm">Sign Up</button>
+          <a href="login.html" class="px-4 py-2 text-emerald-700 font-semibold hover:bg-emerald-50 rounded-lg">Login</a>
+          <a href="signup.html" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 shadow-sm">Sign Up</a>
         </div>
       `;
     }
@@ -144,9 +146,13 @@ function updateUIAuth() {
 // Router & View Loader
 function navigateTo(view, param = null) {
   state.activeView = view;
+  state.activeParam = param;
+  
+  // Hide all views
   document.querySelectorAll(".view-panel").forEach(el => el.classList.add("hidden"));
   document.querySelectorAll(".nav-link").forEach(el => el.classList.remove("active"));
   
+  // Highlight sidebar
   const activeLink = document.querySelector(`.nav-link[data-view="${view}"]`);
   if (activeLink) activeLink.classList.add("active");
 
@@ -188,6 +194,9 @@ function navigateTo(view, param = null) {
       break;
     case "event-detail":
       loadEventDetail(param);
+      break;
+    default:
+      loadDashboard();
       break;
   }
 }
@@ -254,7 +263,7 @@ async function loadFeed(category = "All") {
         <div class="bg-white p-8 rounded-xl text-center border border-slate-200">
           <span class="material-symbols-outlined text-4xl text-slate-400">forum</span>
           <p class="mt-2 text-slate-600 font-medium">No community posts found.</p>
-          <button onclick="openModal('createPostModal')" class="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm">Create First Post</button>
+          <button onclick="openModal('createPostModal')" class="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">Create First Post</button>
         </div>
       `;
       return;
@@ -264,7 +273,7 @@ async function loadFeed(category = "All") {
       <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
         <div class="flex justify-between items-center">
           <div class="flex items-center gap-3">
-            <img src="${p.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-10 h-10 rounded-full object-cover border border-emerald-500">
+            <img src="${p.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-10 h-10 rounded-full object-cover border border-emerald-500 cursor-pointer" onclick="navigateTo('profile', ${p.user_id})">
             <div>
               <h4 class="font-bold text-slate-900 text-sm cursor-pointer hover:underline" onclick="navigateTo('profile', ${p.user_id})">${p.full_name}</h4>
               <p class="text-xs text-slate-500">@${p.username} • ${new Date(p.created_at).toLocaleDateString()}</p>
@@ -313,7 +322,11 @@ async function toggleLikePost(postId) {
   }
   try {
     const res = await apiFetch(`/api/posts/${postId}/like`, { method: "POST" });
-    loadFeed();
+    if (state.activeView === 'post-detail') {
+      loadPostDetail(postId);
+    } else {
+      loadFeed();
+    }
   } catch (err) {
     showToast(err.message, "error");
   }
@@ -355,7 +368,7 @@ async function loadWasteReports() {
               <span>⚠️ Severity: <strong>${r.severity}</strong></span>
               <span>📍 ${r.location_address}</span>
             </div>
-            <span>Reported by @${r.username}</span>
+            <span class="cursor-pointer hover:underline text-emerald-700 font-semibold" onclick="navigateTo('profile', ${r.user_id})">Reported by @${r.username}</span>
           </div>
         </div>
       </div>
@@ -424,7 +437,11 @@ async function joinEvent(eventId) {
   try {
     const res = await apiFetch(`/api/events/${eventId}/join`, { method: "POST" });
     showToast(res.message);
-    loadEvents();
+    if (state.activeView === 'event-detail') {
+      loadEventDetail(eventId);
+    } else {
+      loadEvents();
+    }
   } catch (err) {
     showToast(err.message, "error");
   }
@@ -434,13 +451,362 @@ async function leaveEvent(eventId) {
   try {
     const res = await apiFetch(`/api/events/${eventId}/leave`, { method: "POST" });
     showToast(res.message);
-    loadEvents();
+    if (state.activeView === 'event-detail') {
+      loadEventDetail(eventId);
+    } else {
+      loadEvents();
+    }
   } catch (err) {
     showToast(err.message, "error");
   }
 }
 
-// Interactive Leaflet Map Engine
+// User Profile Renderer (Handles Current User & Public Profiles)
+async function loadUserProfile(targetUserId = null) {
+  const userId = targetUserId || (state.user ? state.user.id : null);
+  const container = document.getElementById("user-profile-container");
+  if (!container) return;
+
+  if (!userId) {
+    container.innerHTML = `
+      <div class="bg-white p-8 rounded-xl text-center border text-slate-600">
+        <p class="font-medium">Please login to view your user profile.</p>
+        <button onclick="openModal('loginModal')" class="mt-4 px-5 py-2 bg-emerald-600 text-white font-bold rounded-lg">Login</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium">Loading profile details...</div>`;
+
+  try {
+    const profile = await apiFetch(`/api/users/${userId}`);
+    const isSelf = state.user && state.user.id === profile.id;
+
+    container.innerHTML = `
+      <div class="space-y-6">
+        <!-- Profile Banner Card -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+          <div class="flex flex-col md:flex-row items-center gap-6">
+            <img src="${profile.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-24 h-24 rounded-full object-cover border-4 border-emerald-500 shadow-md">
+            <div class="text-center md:text-left space-y-1">
+              <h2 class="text-2xl font-black text-slate-900">${profile.full_name}</h2>
+              <p class="text-sm font-semibold text-slate-500">@${profile.username} • 📍 ${profile.location || 'Mangalore'}</p>
+              <p class="text-sm text-slate-700 max-w-lg mt-2">${profile.bio || 'Environmental advocate & eco volunteer.'}</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center md:items-end gap-3">
+            <div class="text-right">
+              <span class="text-3xl font-black text-emerald-700">${profile.points}</span>
+              <p class="text-xs font-bold text-slate-500 uppercase">Impact Points</p>
+            </div>
+            ${isSelf ? `
+              <button onclick="openModal('editProfileModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg text-sm border flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">edit</span> Edit Profile
+              </button>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Badges Showcase -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
+          <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <span>🎖️ Unlocked Eco Badges</span>
+          </h3>
+          <div class="flex flex-wrap gap-3">
+            ${profile.badges && profile.badges.length > 0 ? profile.badges.map(b => `
+              <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
+                <span class="text-2xl">${b.icon}</span>
+                <div>
+                  <h4 class="font-bold text-slate-800 text-sm">${b.name}</h4>
+                  <p class="text-xs text-slate-500">${b.description}</p>
+                </div>
+              </div>
+            `).join('') : '<p class="text-slate-500 text-sm">No badges unlocked yet.</p>'}
+          </div>
+        </div>
+
+        <!-- Activity Counter Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="bg-white p-4 rounded-xl border text-center shadow-sm">
+            <span class="text-2xl font-black text-slate-900">${profile.total_reports}</span>
+            <p class="text-xs text-slate-500 font-bold uppercase mt-1">Waste Reports</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border text-center shadow-sm">
+            <span class="text-2xl font-black text-slate-900">${profile.total_posts}</span>
+            <p class="text-xs text-slate-500 font-bold uppercase mt-1">Posts Published</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border text-center shadow-sm">
+            <span class="text-2xl font-black text-slate-900">${profile.events_joined}</span>
+            <p class="text-xs text-slate-500 font-bold uppercase mt-1">Events Joined</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border text-center shadow-sm">
+            <span class="text-2xl font-black text-slate-900">${profile.events_organized}</span>
+            <p class="text-xs text-slate-500 font-bold uppercase mt-1">Events Organized</p>
+          </div>
+        </div>
+
+        <!-- User Recent Posts -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-900 text-lg">User Activity & Posts</h3>
+          <div class="space-y-3">
+            ${profile.recent_posts && profile.recent_posts.length > 0 ? profile.recent_posts.map(p => `
+              <div class="p-4 bg-slate-50 border rounded-xl flex justify-between items-center">
+                <div>
+                  <h4 class="font-bold text-slate-800 text-sm">${p.title || 'Community Post'}</h4>
+                  <p class="text-xs text-slate-500 line-clamp-1 mt-1">${p.content}</p>
+                </div>
+                <button onclick="navigateTo('post-detail', ${p.id})" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">View</button>
+              </div>
+            `).join('') : '<p class="text-slate-500 text-sm">No recent posts published.</p>'}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Populate edit modal fields if self
+    if (isSelf) {
+      document.getElementById("editFullName").value = profile.full_name || "";
+      document.getElementById("editBio").value = profile.bio || "";
+      document.getElementById("editLocation").value = profile.location || "";
+      document.getElementById("editProfilePic").value = profile.profile_pic || "";
+    }
+  } catch (err) {
+    container.innerHTML = `<div class="p-8 bg-white border rounded-xl text-red-600">${err.message}</div>`;
+  }
+}
+
+// User Activity Log Page
+async function loadMyActivity() {
+  if (!state.user) {
+    showToast("Please login to view your activity log.", "error");
+    openModal("loginModal");
+    return;
+  }
+  const container = document.getElementById("my-activity-container");
+  if (!container) return;
+
+  container.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium">Loading your activity history...</div>`;
+
+  try {
+    const [reports, myEvents] = await Promise.all([
+      apiFetch(`/api/reports?user_id=${state.user.id}`),
+      apiFetch("/api/events/my-events")
+    ]);
+
+    container.innerHTML = `
+      <div class="space-y-6">
+        <!-- My Waste Reports -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-600">delete_sweep</span> My Submitted Reports
+          </h3>
+          <div class="space-y-3">
+            ${reports.length > 0 ? reports.map(r => `
+              <div class="p-4 bg-slate-50 border rounded-xl flex justify-between items-center">
+                <div>
+                  <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">${r.tracking_id}</span>
+                  <h4 class="font-bold text-slate-800 text-sm mt-1">${r.title}</h4>
+                  <p class="text-xs text-slate-500">📍 ${r.location_address}</p>
+                </div>
+                <span class="badge-status status-${r.status.replace(/\s+/g, '')}">${r.status}</span>
+              </div>
+            `).join('') : '<p class="text-slate-500 text-sm">You haven\'t submitted any waste reports yet.</p>'}
+          </div>
+        </div>
+
+        <!-- My Organized Events -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-600">event</span> Events Organized By Me
+          </h3>
+          <div class="space-y-3">
+            ${myEvents.organized.length > 0 ? myEvents.organized.map(e => `
+              <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl flex justify-between items-center">
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm">${e.name}</h4>
+                  <p class="text-xs text-emerald-800">📅 ${e.event_date} • 👥 ${e.participant_count} Registered</p>
+                </div>
+                <div class="flex gap-2">
+                  <button onclick="navigateTo('event-detail', ${e.id})" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">View</button>
+                  ${e.status !== 'Completed' ? `
+                    <button onclick="openEventRecapModal(${e.id})" class="px-3 py-1 bg-amber-600 text-white text-xs font-bold rounded-lg">Mark Recap</button>
+                  ` : ''}
+                </div>
+              </div>
+            `).join('') : '<p class="text-slate-500 text-sm">You haven\'t organized any cleanup events yet.</p>'}
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    container.innerHTML = `<div class="p-8 bg-white border rounded-xl text-red-600">${err.message}</div>`;
+  }
+}
+
+// Single Post Detail Permalink View
+async function loadPostDetail(postId) {
+  const container = document.getElementById("post-detail-container");
+  if (!container) return;
+
+  container.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium">Loading post details...</div>`;
+
+  try {
+    const post = await apiFetch(`/api/posts/${postId}`);
+    container.innerHTML = `
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 max-w-3xl mx-auto">
+        <button onclick="navigateTo('feed')" class="text-xs font-bold text-emerald-700 flex items-center gap-1 hover:underline">
+          <span class="material-symbols-outlined text-sm">arrow_back</span> Back to Community Feed
+        </button>
+
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <img src="${post.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-11 h-11 rounded-full object-cover border border-emerald-500 cursor-pointer" onclick="navigateTo('profile', ${post.user_id})">
+            <div>
+              <h4 class="font-bold text-slate-900 text-base cursor-pointer hover:underline" onclick="navigateTo('profile', ${post.user_id})">${post.full_name}</h4>
+              <p class="text-xs text-slate-500">@${post.username} • ${new Date(post.created_at).toLocaleString()}</p>
+            </div>
+          </div>
+          <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">${post.category}</span>
+        </div>
+
+        <div>
+          ${post.title ? `<h2 class="font-black text-slate-900 text-2xl mb-2">${post.title}</h2>` : ''}
+          <p class="text-slate-700 whitespace-pre-line text-base leading-relaxed">${post.content}</p>
+        </div>
+
+        ${post.image_url ? `<img src="${post.image_url}" class="w-full max-h-96 object-cover rounded-xl border">` : ''}
+
+        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+          <button onclick="toggleLikePost(${post.id})" class="flex items-center gap-2 font-bold ${post.is_liked ? 'text-red-600' : 'text-slate-600'}">
+            <span class="material-symbols-outlined">${post.is_liked ? 'favorite' : 'favorite_border'}</span>
+            <span>${post.likes_count} Likes</span>
+          </button>
+          <button onclick="openShareModal(${post.id}, '${post.title || 'Community Post'}')" class="flex items-center gap-2 font-bold text-slate-600 hover:text-emerald-600">
+            <span class="material-symbols-outlined">share</span> Share
+          </button>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="pt-6 border-t border-slate-200 space-y-4">
+          <h3 class="font-bold text-slate-900 text-lg">Comments (${post.comments.length})</h3>
+
+          <div class="flex gap-2">
+            <input type="text" id="commentInput-${post.id}" placeholder="Write a comment..." class="flex-1 px-3 py-2 border rounded-lg text-sm outline-none">
+            <button onclick="submitComment(${post.id})" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg text-sm">Post</button>
+          </div>
+
+          <div class="space-y-3">
+            ${post.comments.map(c => `
+              <div class="p-3 bg-slate-50 border rounded-xl flex items-start gap-3">
+                <img src="${c.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-8 h-8 rounded-full object-cover">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h5 class="font-bold text-slate-900 text-xs">${c.full_name}</h5>
+                    <span class="text-xs text-slate-400">${new Date(c.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <p class="text-slate-700 text-xs mt-0.5">${c.comment}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    container.innerHTML = `<div class="p-8 bg-white border rounded-xl text-red-600">${err.message}</div>`;
+  }
+}
+
+async function submitComment(postId) {
+  if (!state.token) {
+    showToast("Please login to comment.", "error");
+    openModal("loginModal");
+    return;
+  }
+  const input = document.getElementById(`commentInput-${postId}`);
+  if (!input || !input.value.trim()) return;
+
+  try {
+    await apiFetch(`/api/posts/${postId}/comment`, {
+      method: "POST",
+      body: JSON.stringify({ comment: input.value.trim() })
+    });
+    input.value = "";
+    loadPostDetail(postId);
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+// Single Event Detail View
+async function loadEventDetail(eventId) {
+  const container = document.getElementById("event-detail-container");
+  if (!container) return;
+
+  container.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium">Loading event details...</div>`;
+
+  try {
+    const event = await apiFetch(`/api/events/${eventId}`);
+    const isOrganizer = state.user && state.user.id === event.organizer_id;
+
+    container.innerHTML = `
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 max-w-4xl mx-auto">
+        <button onclick="navigateTo('events')" class="text-xs font-bold text-emerald-700 flex items-center gap-1 hover:underline">
+          <span class="material-symbols-outlined text-sm">arrow_back</span> Back to Events List
+        </button>
+
+        <div class="flex flex-col md:flex-row gap-6">
+          <img src="${event.cover_image || 'https://images.unsplash.com/photo-1595278069441-2cf29f8005a4?w=600'}" class="w-full md:w-80 h-56 object-cover rounded-xl border">
+          <div class="space-y-3 flex-1">
+            <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">${event.status}</span>
+            <h2 class="text-2xl font-black text-slate-900">${event.name}</h2>
+            <p class="text-slate-600 text-sm leading-relaxed">${event.description}</p>
+            
+            <div class="space-y-1 text-xs text-slate-600 border-t pt-3">
+              <p>📅 Date & Time: <strong>${event.event_date} (${event.start_time} - ${event.end_time})</strong></p>
+              <p>📍 Address: <strong>${event.location_address}</strong></p>
+              <p>📁 Waste Category: <strong>${event.waste_category}</strong></p>
+              <p>🎒 Required Materials: <strong>${event.required_materials || 'None specified'}</strong></p>
+            </div>
+
+            <div class="pt-3 flex gap-3">
+              ${event.is_joined ? `
+                <button onclick="leaveEvent(${event.id})" class="px-5 py-2.5 bg-red-100 text-red-700 hover:bg-red-200 font-bold rounded-xl text-sm">Leave Event</button>
+              ` : `
+                <button onclick="joinEvent(${event.id})" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow">Join Cleanup Event</button>
+              `}
+              ${isOrganizer && event.status !== 'Completed' ? `
+                <button onclick="openEventRecapModal(${event.id})" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm shadow">Submit Event Recap</button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Participants List -->
+        <div class="border-t pt-6 space-y-4">
+          <h3 class="font-bold text-slate-900 text-lg">Registered Participants (${event.participants.length} / ${event.max_participants})</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            ${event.participants.map(p => `
+              <div class="p-3 bg-slate-50 border rounded-xl flex items-center gap-3 cursor-pointer" onclick="navigateTo('profile', ${p.id})">
+                <img src="${p.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-8 h-8 rounded-full object-cover">
+                <div>
+                  <h5 class="font-bold text-slate-800 text-xs">${p.full_name}</h5>
+                  <span class="text-xs text-slate-500">@${p.username}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    container.innerHTML = `<div class="p-8 bg-white border rounded-xl text-red-600">${err.message}</div>`;
+  }
+}
+
+// Leaflet Interactive Map Engine
 function initOrUpdateMap() {
   const mapContainer = document.getElementById("leaflet-map");
   if (!mapContainer) return;
@@ -485,7 +851,7 @@ async function loadLeaderboard() {
       <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-4">
           <span class="font-black text-lg ${index === 0 ? 'text-amber-500' : index === 1 ? 'text-slate-400' : index === 2 ? 'text-amber-700' : 'text-slate-500'} w-6">#${index + 1}</span>
-          <img src="${u.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-12 h-12 rounded-full object-cover border-2 border-emerald-500">
+          <img src="${u.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-12 h-12 rounded-full object-cover border-2 border-emerald-500 cursor-pointer" onclick="navigateTo('profile', ${u.id})">
           <div>
             <h4 class="font-bold text-slate-900 text-base cursor-pointer hover:underline" onclick="navigateTo('profile', ${u.id})">${u.full_name}</h4>
             <div class="flex items-center gap-2 mt-1">
@@ -497,7 +863,7 @@ async function loadLeaderboard() {
 
         <div class="text-right">
           <span class="text-2xl font-black text-emerald-700">${u.points}</span>
-          <p class="text-xs text-slate-500">Impact Points</p>
+          <p class="text-xs text-slate-500 font-bold uppercase">Impact Points</p>
         </div>
       </div>
     `).join('');
@@ -506,8 +872,7 @@ async function loadLeaderboard() {
   }
 }
 
-// --- AI Auto Classification & Post Improvement ---
-
+// AI Auto Classification & Post Improvement
 async function triggerAIWasteClassification(input) {
   const file = input.files[0];
   if (!file) return;
@@ -538,7 +903,6 @@ async function triggerAIWasteClassification(input) {
     const catSelect = document.getElementById("reportCategory");
     if (catSelect) catSelect.value = res.category;
 
-    // Suggest description
     const descRes = await apiFetch("/api/ai/suggest-description", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -557,7 +921,7 @@ async function improvePostWithAI() {
   const textInput = document.getElementById("postText");
   const titleInput = document.getElementById("postTitle");
   if (!textInput || !textInput.value) {
-    showToast("Please enter some post text first to improve with AI.", "error");
+    showToast("Please enter post text first.", "error");
     return;
   }
 
@@ -577,8 +941,7 @@ async function improvePostWithAI() {
   }
 }
 
-// --- Modals Engine ---
-
+// Modal Handlers
 function openModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.classList.add("open");
@@ -616,8 +979,12 @@ function copyShareLink() {
   }
 }
 
-// --- Admin Panel Engine ---
+function openEventRecapModal(eventId) {
+  state.recapEventId = eventId;
+  openModal("eventRecapModal");
+}
 
+// Admin Panel
 async function loadAdminDashboard() {
   if (!state.user || state.user.role !== 'admin') {
     showToast("Access Denied: Admin authorization required.", "error");
@@ -674,68 +1041,188 @@ async function toggleBlockUser(userId) {
   }
 }
 
-// --- Initializer & Event Listeners ---
+// Notifications Renderer
+async function loadNotifications() {
+  if (!state.token) return;
+  try {
+    const notifications = await apiFetch("/api/notifications");
+    state.notifications = notifications;
 
+    const list = document.getElementById("notifications-list");
+    if (!list) return;
+
+    if (notifications.length === 0) {
+      list.innerHTML = `<p class="p-4 text-center text-slate-500 text-sm">No notifications yet.</p>`;
+      return;
+    }
+
+    list.innerHTML = notifications.map(n => `
+      <div class="p-3 border-b hover:bg-slate-50 flex justify-between items-center ${n.is_read ? 'opacity-60' : 'bg-emerald-50/40'}">
+        <div>
+          <h4 class="font-bold text-slate-800 text-sm">${n.title}</h4>
+          <p class="text-xs text-slate-600 mt-0.5">${n.message}</p>
+          <span class="text-xs text-slate-400">${new Date(n.created_at).toLocaleString()}</span>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error("Notifications error:", err);
+  }
+}
+
+async function markNotificationsRead() {
+  try {
+    await apiFetch("/api/notifications/read-all", { method: "POST" });
+    if (state.user) state.user.unread_notifications = 0;
+    updateUIAuth();
+    loadNotifications();
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+// Hash Routing Handler
+function handleHashRoute() {
+  const hash = window.location.hash.replace("#", "");
+  if (!hash) {
+    navigateTo("dashboard");
+    return;
+  }
+
+  const parts = hash.split("/");
+  const route = parts[0];
+  const param = parts[1] ? parseInt(parts[1], 10) || parts[1] : null;
+
+  navigateTo(route, param);
+}
+
+// Submissions Engine
+async function submitPost() {
+  if (!state.token) {
+    showToast("Please login to create posts.", "error");
+    openModal("loginModal");
+    return;
+  }
+  const content = document.getElementById("postText").value;
+  const title = document.getElementById("postTitle")?.value || "";
+  if (!content.trim()) {
+    showToast("Please write some post content.", "error");
+    return;
+  }
+
+  try {
+    const res = await apiFetch("/api/posts", {
+      method: "POST",
+      body: JSON.stringify({ title, content, category: "Awareness" })
+    });
+    closeModal("createPostModal");
+    document.getElementById("postText").value = "";
+    showToast("Post published successfully! (+5 pts)");
+    navigateTo("feed");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+async function submitEvent(e) {
+  if (e) e.preventDefault();
+  if (!state.token) {
+    showToast("Please login to create cleanup events.", "error");
+    openModal("loginModal");
+    return;
+  }
+
+  const payload = {
+    name: document.getElementById("eventName").value,
+    description: document.getElementById("eventDesc").value,
+    event_date: document.getElementById("eventDate").value,
+    start_time: document.getElementById("eventStartTime").value,
+    end_time: document.getElementById("eventEndTime").value,
+    location_address: document.getElementById("eventAddress").value,
+    max_participants: parseInt(document.getElementById("eventMaxPart").value, 10) || 50,
+    waste_category: document.getElementById("eventWasteCat").value,
+    required_materials: document.getElementById("eventMaterials").value
+  };
+
+  try {
+    const res = await apiFetch("/api/events", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    closeModal("createEventModal");
+    showToast("Cleanup event published successfully! (+50 pts)");
+    navigateTo("events");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+async function submitEventRecap(e) {
+  if (e) e.preventDefault();
+  if (!state.recapEventId) return;
+
+  const payload = {
+    actual_participants: parseInt(document.getElementById("recapParticipants").value, 10) || 0,
+    waste_collected_kg: parseFloat(document.getElementById("recapWasteKg").value) || 0,
+    waste_types_collected: document.getElementById("recapWasteTypes").value || "Mixed"
+  };
+
+  try {
+    await apiFetch(`/api/events/${state.recapEventId}/recap`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    closeModal("eventRecapModal");
+    showToast("Event recap submitted! (+30 bonus pts)");
+    navigateTo("event-detail", state.recapEventId);
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+async function submitProfileUpdate(e) {
+  if (e) e.preventDefault();
+  const payload = {
+    full_name: document.getElementById("editFullName").value,
+    bio: document.getElementById("editBio").value,
+    location: document.getElementById("editLocation").value,
+    profile_pic: document.getElementById("editProfilePic").value
+  };
+
+  try {
+    const res = await apiFetch("/api/users/profile", {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    });
+    closeModal("editProfileModal");
+    showToast("Profile updated successfully!");
+    state.user = { ...state.user, ...res.user };
+    updateUIAuth();
+    loadUserProfile();
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+// Initializer & Event Listeners
 document.addEventListener("DOMContentLoaded", async () => {
   await checkAuth();
-  navigateTo("dashboard");
 
-  // Auth Form Handlers
-  const loginForm = document.getElementById("loginForm");
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("loginEmail").value;
-      const pass = document.getElementById("loginPass").value;
-      try {
-        const res = await apiFetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password: pass })
-        });
-        state.token = res.token;
-        state.user = res.user;
-        localStorage.setItem("ecotrack_token", res.token);
-        closeModal("loginModal");
-        showToast("Logged in successfully!");
-        updateUIAuth();
-        navigateTo("dashboard");
-      } catch (err) {
-        showToast(err.message, "error");
-      }
-    });
-  }
+  // Route URL hash
+  window.addEventListener("hashchange", handleHashRoute);
+  handleHashRoute();
 
-  const signupForm = document.getElementById("signupForm");
-  if (signupForm) {
-    signupForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const data = {
-        username: document.getElementById("signupUsername").value,
-        email: document.getElementById("signupEmail").value,
-        password: document.getElementById("signupPass").value,
-        full_name: document.getElementById("signupFullName").value,
-        location: document.getElementById("signupLocation")?.value || "Mangalore, India",
-        bio: document.getElementById("signupBio")?.value || "Environmental advocate"
-      };
-      try {
-        const res = await apiFetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-        });
-        state.token = res.token;
-        state.user = res.user;
-        localStorage.setItem("ecotrack_token", res.token);
-        closeModal("signupModal");
-        showToast("Account created successfully! Welcome to EcoTrack.");
-        updateUIAuth();
-        navigateTo("dashboard");
-      } catch (err) {
-        showToast(err.message, "error");
-      }
-    });
-  }
+  // Create Event Form
+  const eventForm = document.getElementById("createEventForm");
+  if (eventForm) eventForm.addEventListener("submit", submitEvent);
+
+  // Event Recap Form
+  const recapForm = document.getElementById("eventRecapForm");
+  if (recapForm) recapForm.addEventListener("submit", submitEventRecap);
+
+  // Edit Profile Form
+  const profileForm = document.getElementById("editProfileForm");
+  if (profileForm) profileForm.addEventListener("submit", submitProfileUpdate);
 
   // Waste Report Form Submit
   const reportForm = document.getElementById("createReportForm");
@@ -770,7 +1257,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const res = await apiFetch("/api/reports", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
         closeModal("createReportModal");

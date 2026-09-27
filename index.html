@@ -41,7 +41,7 @@
 
     <div class="flex items-center gap-3">
       <!-- Notification Icon -->
-      <button id="notif-btn" onclick="openModal('notificationsModal')" class="relative p-2 text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-full transition hidden">
+      <button id="notif-btn" onclick="openModal('notificationsModal'); loadNotifications();" class="relative p-2 text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-full transition hidden">
         <span class="material-symbols-outlined text-2xl">notifications</span>
         <span id="notif-badge" class="absolute top-1 right-1 bg-red-600 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
       </button>
@@ -55,42 +55,47 @@
     <!-- Sidebar Navigation -->
     <aside class="app-sidebar bg-slate-900 text-white w-64 p-4 flex flex-col justify-between shrink-0">
       <nav class="sidebar-nav space-y-1">
-        <a href="#" onclick="navigateTo('dashboard')" data-view="dashboard" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#dashboard" onclick="navigateTo('dashboard')" data-view="dashboard" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
           <span class="material-symbols-outlined">dashboard</span>
           <span>Dashboard</span>
         </a>
 
-        <a href="#" onclick="navigateTo('feed')" data-view="feed" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#feed" onclick="navigateTo('feed')" data-view="feed" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
           <span class="material-symbols-outlined">forum</span>
           <span>Community Feed</span>
         </a>
 
-        <a href="#" onclick="navigateTo('reports')" data-view="reports" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#reports" onclick="navigateTo('reports')" data-view="reports" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
           <span class="material-symbols-outlined">delete_sweep</span>
           <span>Waste Reports</span>
         </a>
 
-        <a href="#" onclick="navigateTo('events')" data-view="events" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#events" onclick="navigateTo('events')" data-view="events" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
           <span class="material-symbols-outlined">event</span>
           <span>Cleanup Events</span>
         </a>
 
-        <a href="#" onclick="navigateTo('map')" data-view="map" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#map" onclick="navigateTo('map')" data-view="map" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
           <span class="material-symbols-outlined">map</span>
           <span>Interactive Map</span>
         </a>
 
-        <a href="#" onclick="navigateTo('leaderboard')" data-view="leaderboard" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#leaderboard" onclick="navigateTo('leaderboard')" data-view="leaderboard" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
           <span class="material-symbols-outlined">leaderboard</span>
           <span>Leaderboard</span>
         </a>
 
-        <a href="#" onclick="navigateTo('my-activity')" data-view="my-activity" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#my-activity" onclick="navigateTo('my-activity')" data-view="my-activity" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
           <span class="material-symbols-outlined">history</span>
           <span>My Activity</span>
         </a>
 
-        <a href="#" id="admin-nav-item" onclick="navigateTo('admin')" data-view="admin" class="nav-link hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-900/40 font-semibold text-sm border border-purple-800">
+        <a href="#profile" onclick="navigateTo('profile')" data-view="profile" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+          <span class="material-symbols-outlined">person</span>
+          <span>User Profile</span>
+        </a>
+
+        <a href="#admin" id="admin-nav-item" onclick="navigateTo('admin')" data-view="admin" class="nav-link hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-900/40 font-semibold text-sm border border-purple-800">
           <span class="material-symbols-outlined">admin_panel_settings</span>
           <span>Admin Panel</span>
         </a>
@@ -159,7 +164,6 @@
 
         <!-- Dashboard Content Grids -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Recent Reports -->
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
             <div class="flex justify-between items-center">
               <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
@@ -170,7 +174,6 @@
             <div id="dash-recent-reports" class="space-y-2"></div>
           </div>
 
-          <!-- Upcoming Events -->
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
             <div class="flex justify-between items-center">
               <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
@@ -195,7 +198,6 @@
           </button>
         </div>
 
-        <!-- Filter Tabs -->
         <div class="flex flex-wrap gap-2 pb-2 border-b border-slate-200">
           <button onclick="loadFeed('All')" class="px-4 py-1.5 bg-emerald-700 text-white font-semibold text-xs rounded-full">All Posts</button>
           <button onclick="loadFeed('Awareness')" class="px-4 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-full hover:bg-slate-300">Awareness</button>
@@ -203,7 +205,6 @@
           <button onclick="loadFeed('Success Stories')" class="px-4 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-full hover:bg-slate-300">Success Stories</button>
         </div>
 
-        <!-- Feed List -->
         <div id="community-feed-container" class="space-y-5 max-w-3xl mx-auto"></div>
       </section>
 
@@ -253,6 +254,26 @@
           <p class="text-slate-500 text-sm">Top community contributors earning points for waste reporting & cleanups.</p>
         </div>
         <div id="leaderboard-list" class="space-y-3"></div>
+      </section>
+
+      <!-- View: User Profile -->
+      <section id="view-profile" class="view-panel hidden space-y-6">
+        <div id="user-profile-container"></div>
+      </section>
+
+      <!-- View: My Activity -->
+      <section id="view-my-activity" class="view-panel hidden space-y-6">
+        <div id="my-activity-container"></div>
+      </section>
+
+      <!-- View: Post Detail -->
+      <section id="view-post-detail" class="view-panel hidden space-y-6">
+        <div id="post-detail-container"></div>
+      </section>
+
+      <!-- View: Event Detail -->
+      <section id="view-event-detail" class="view-panel hidden space-y-6">
+        <div id="event-detail-container"></div>
       </section>
 
       <!-- View: Admin Panel -->
@@ -307,6 +328,144 @@
 
   <!-- --- MODALS --- -->
 
+  <!-- Create Cleanup Event Modal -->
+  <div id="createEventModal" class="modal-backdrop">
+    <div class="modal-box p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-xl text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600">group_add</span> Create Cleanup Event
+        </h3>
+        <button onclick="closeModal('createEventModal')" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </div>
+
+      <form id="createEventForm" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Event Name</label>
+          <input type="text" id="eventName" required placeholder="Panambur Beach Clean Drive" class="w-full px-3 py-2 border rounded-lg outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Description</label>
+          <textarea id="eventDesc" rows="3" required placeholder="Describe the event goals..." class="w-full px-3 py-2 border rounded-lg outline-none"></textarea>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Date</label>
+            <input type="date" id="eventDate" required class="w-full px-2 py-2 border rounded-lg outline-none text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Start Time</label>
+            <input type="text" id="eventStartTime" required placeholder="07:30 AM" class="w-full px-2 py-2 border rounded-lg outline-none text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">End Time</label>
+            <input type="text" id="eventEndTime" required placeholder="10:30 AM" class="w-full px-2 py-2 border rounded-lg outline-none text-xs">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Address / Location</label>
+          <input type="text" id="eventAddress" required placeholder="Panambur Beach Main Entrance" class="w-full px-3 py-2 border rounded-lg outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Max Participants</label>
+            <input type="number" id="eventMaxPart" value="50" class="w-full px-3 py-2 border rounded-lg outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Waste Category</label>
+            <select id="eventWasteCat" class="w-full px-3 py-2 border rounded-lg outline-none bg-white">
+              <option value="Plastic">Plastic</option>
+              <option value="Mixed" selected>Mixed</option>
+              <option value="E-waste">E-waste</option>
+              <option value="Food waste">Food waste</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Required Materials</label>
+          <input type="text" id="eventMaterials" placeholder="Gloves, sun hat, reusable water bottle" class="w-full px-3 py-2 border rounded-lg outline-none">
+        </div>
+        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow">Publish Event (+50 pts)</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Event Recap Modal -->
+  <div id="eventRecapModal" class="modal-backdrop">
+    <div class="modal-box p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-xl text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-600">task_alt</span> Submit Event Recap
+        </h3>
+        <button onclick="closeModal('eventRecapModal')" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </div>
+
+      <form id="eventRecapForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Actual Participants</label>
+          <input type="number" id="recapParticipants" required placeholder="45" class="w-full px-3 py-2 border rounded-lg outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Total Waste Collected (kg)</label>
+          <input type="number" step="0.1" id="recapWasteKg" required placeholder="120.5" class="w-full px-3 py-2 border rounded-lg outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Waste Types Collected</label>
+          <input type="text" id="recapWasteTypes" required placeholder="Plastic bottles, fishing nets, glass" class="w-full px-3 py-2 border rounded-lg outline-none">
+        </div>
+        <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow">Submit Recap (+30 bonus pts)</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal" class="modal-backdrop">
+    <div class="modal-box p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-xl text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600">edit_attributes</span> Edit Profile
+        </h3>
+        <button onclick="closeModal('editProfileModal')" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </div>
+
+      <form id="editProfileForm" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name</label>
+          <input type="text" id="editFullName" required class="w-full px-3 py-2 border rounded-lg outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Location</label>
+          <input type="text" id="editLocation" class="w-full px-3 py-2 border rounded-lg outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bio</label>
+          <textarea id="editBio" rows="3" class="w-full px-3 py-2 border rounded-lg outline-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Profile Picture URL</label>
+          <input type="text" id="editProfilePic" class="w-full px-3 py-2 border rounded-lg outline-none text-xs">
+        </div>
+        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notifications Modal -->
+  <div id="notificationsModal" class="modal-backdrop">
+    <div class="modal-box p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-xl text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600">notifications</span> Notifications
+        </h3>
+        <div class="flex items-center gap-2">
+          <button onclick="markNotificationsRead()" class="text-xs font-bold text-emerald-700 hover:underline">Mark All Read</button>
+          <button onclick="closeModal('notificationsModal')" class="text-slate-400 hover:text-slate-600">&times;</button>
+        </div>
+      </div>
+
+      <div id="notifications-list" class="max-h-80 overflow-y-auto border rounded-xl divide-y"></div>
+    </div>
+  </div>
+
   <!-- Login Modal -->
   <div id="loginModal" class="modal-backdrop">
     <div class="modal-box p-6 space-y-4">
@@ -327,38 +486,6 @@
           <input type="password" id="loginPass" required placeholder="••••••••" class="w-full px-3 py-2 border rounded-lg outline-none focus:border-emerald-600">
         </div>
         <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow">Sign In</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Signup Modal -->
-  <div id="signupModal" class="modal-backdrop">
-    <div class="modal-box p-6 space-y-4">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-xl text-slate-900 flex items-center gap-2">
-          <span class="material-symbols-outlined text-emerald-600">person_add</span> Create EcoTrack Account
-        </h3>
-        <button onclick="closeModal('signupModal')" class="text-slate-400 hover:text-slate-600">&times;</button>
-      </div>
-
-      <form id="signupForm" class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name</label>
-          <input type="text" id="signupFullName" required placeholder="Karthik Pai" class="w-full px-3 py-2 border rounded-lg outline-none focus:border-emerald-600">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
-          <input type="text" id="signupUsername" required placeholder="karthik_eco" class="w-full px-3 py-2 border rounded-lg outline-none focus:border-emerald-600">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email</label>
-          <input type="email" id="signupEmail" required placeholder="karthik@ecotrack.org" class="w-full px-3 py-2 border rounded-lg outline-none focus:border-emerald-600">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
-          <input type="password" id="signupPass" required placeholder="••••••••" class="w-full px-3 py-2 border rounded-lg outline-none focus:border-emerald-600">
-        </div>
-        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow">Create Account (+10 pts)</button>
       </form>
     </div>
   </div>
