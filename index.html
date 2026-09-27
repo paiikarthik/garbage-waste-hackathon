@@ -53,56 +53,58 @@
 
   <div class="app-container flex flex-1">
     <!-- Sidebar Navigation -->
-    <aside class="app-sidebar bg-slate-900 text-white w-64 p-4 flex flex-col justify-between shrink-0">
+    <aside class="app-sidebar shrink-0">
       <nav class="sidebar-nav space-y-1">
-        <a href="#dashboard" onclick="navigateTo('dashboard')" data-view="dashboard" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <div class="sidebar-section-label">Main Menu</div>
+        <a href="#dashboard" onclick="navigateTo('dashboard')" data-view="dashboard" class="nav-link active">
           <span class="material-symbols-outlined">dashboard</span>
           <span>Dashboard</span>
         </a>
 
-        <a href="#feed" onclick="navigateTo('feed')" data-view="feed" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#feed" onclick="navigateTo('feed')" data-view="feed" class="nav-link">
           <span class="material-symbols-outlined">forum</span>
           <span>Community Feed</span>
         </a>
 
-        <a href="#reports" onclick="navigateTo('reports')" data-view="reports" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#reports" onclick="navigateTo('reports')" data-view="reports" class="nav-link">
           <span class="material-symbols-outlined">delete_sweep</span>
           <span>Waste Reports</span>
         </a>
 
-        <a href="#events" onclick="navigateTo('events')" data-view="events" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#events" onclick="navigateTo('events')" data-view="events" class="nav-link">
           <span class="material-symbols-outlined">event</span>
           <span>Cleanup Events</span>
         </a>
 
-        <a href="#map" onclick="navigateTo('map')" data-view="map" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#map" onclick="navigateTo('map')" data-view="map" class="nav-link">
           <span class="material-symbols-outlined">map</span>
           <span>Interactive Map</span>
         </a>
 
-        <a href="#leaderboard" onclick="navigateTo('leaderboard')" data-view="leaderboard" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <div class="sidebar-section-label">Community & Impact</div>
+        <a href="#leaderboard" onclick="navigateTo('leaderboard')" data-view="leaderboard" class="nav-link">
           <span class="material-symbols-outlined">leaderboard</span>
           <span>Leaderboard</span>
         </a>
 
-        <a href="#my-activity" onclick="navigateTo('my-activity')" data-view="my-activity" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#my-activity" onclick="navigateTo('my-activity')" data-view="my-activity" class="nav-link">
           <span class="material-symbols-outlined">history</span>
           <span>My Activity</span>
         </a>
 
-        <a href="#profile" onclick="navigateTo('profile')" data-view="profile" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold text-sm">
+        <a href="#profile" onclick="navigateTo('profile')" data-view="profile" class="nav-link">
           <span class="material-symbols-outlined">person</span>
           <span>User Profile</span>
         </a>
 
-        <a href="#admin" id="admin-nav-item" onclick="navigateTo('admin')" data-view="admin" class="nav-link hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-purple-300 hover:text-purple-100 hover:bg-purple-900/40 font-semibold text-sm border border-purple-800">
+        <a href="#admin" id="admin-nav-item" onclick="navigateTo('admin')" data-view="admin" class="nav-link hidden text-purple-300 hover:text-purple-100">
           <span class="material-symbols-outlined">admin_panel_settings</span>
           <span>Admin Panel</span>
         </a>
       </nav>
 
-      <div class="pt-4 border-t border-slate-800 text-xs text-slate-500 text-center">
-        EcoTrack v2.0 • Green Earth 🌍
+      <div class="pt-4 border-t border-emerald-900/60 text-xs text-emerald-400/80 text-center font-semibold">
+        EcoTrack v2.0 • Clean & Green 🌍
       </div>
     </aside>
 
