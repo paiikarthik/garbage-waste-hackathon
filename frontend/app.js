@@ -252,7 +252,8 @@ async function loadDashboard() {
 async function loadFeed(category = "All") {
   try {
     const search = document.getElementById("feed-search-input")?.value || "";
-    const posts = await apiFetch(`/api/posts?category=${category}&search=${encodeURIComponent(search)}`);
+    const location = document.getElementById("feed-location-input")?.value || "";
+    const posts = await apiFetch(`/api/posts?category=${category}&search=${encodeURIComponent(search)}&location=${encodeURIComponent(location)}`);
     state.posts = posts;
     
     const feedContainer = document.getElementById("community-feed-container");
@@ -262,7 +263,7 @@ async function loadFeed(category = "All") {
       feedContainer.innerHTML = `
         <div class="bg-white p-8 rounded-xl text-center border border-slate-200">
           <span class="material-symbols-outlined text-4xl text-slate-400">forum</span>
-          <p class="mt-2 text-slate-600 font-medium">No community posts found.</p>
+          <p class="mt-2 text-slate-600 font-medium">No community posts found matching your criteria.</p>
           <button onclick="openModal('createPostModal')" class="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">Create First Post</button>
         </div>
       `;
@@ -336,7 +337,8 @@ async function loadWasteReports() {
   try {
     const status = document.getElementById("report-status-filter")?.value || "All";
     const category = document.getElementById("report-category-filter")?.value || "All";
-    const reports = await apiFetch(`/api/reports?status=${status}&category=${category}`);
+    const location = document.getElementById("report-location-filter")?.value || "";
+    const reports = await apiFetch(`/api/reports?status=${status}&category=${category}&location=${encodeURIComponent(location)}`);
     state.reports = reports;
 
     const list = document.getElementById("waste-reports-list");
@@ -380,14 +382,17 @@ async function loadWasteReports() {
 
 async function loadEvents() {
   try {
-    const events = await apiFetch("/api/events");
+    const category = document.getElementById("event-category-filter")?.value || "All";
+    const status_filter = document.getElementById("event-status-filter")?.value || "All";
+    const location = document.getElementById("event-location-filter")?.value || "";
+    const events = await apiFetch(`/api/events?category=${category}&status=${status_filter}&location=${encodeURIComponent(location)}`);
     state.events = events;
 
     const container = document.getElementById("events-grid-container");
     if (!container) return;
 
     if (events.length === 0) {
-      container.innerHTML = `<div class="col-span-full p-8 text-center bg-white rounded-xl border text-slate-500">No cleanup events scheduled. Create one!</div>`;
+      container.innerHTML = `<div class="col-span-full p-8 text-center bg-white rounded-xl border text-slate-500">No cleanup events match your location criteria.</div>`;
       return;
     }
 
@@ -837,6 +842,42 @@ function initOrUpdateMap() {
       state.mapMarkers.push(marker);
     }
   });
+
+  // Plot Cleanup Events
+  state.events.forEach(e => {
+    if (e.latitude && e.longitude) {
+      const marker = L.marker([e.latitude, e.longitude]).addTo(state.map);
+      marker.bindPopup(`
+        <div class="p-2 space-y-1">
+          <span class="font-mono text-xs text-purple-700 font-bold">EVENT</span>
+          <h4 class="font-bold text-sm">${e.name}</h4>
+          <p class="text-xs text-slate-600">📍 ${e.location_address}</p>
+          <p class="text-xs">📅 ${e.event_date} (${e.start_time})</p>
+        </div>
+      `);
+      state.mapMarkers.push(marker);
+    }
+  });
+}
+
+async function filterMapByLocation() {
+  const loc = document.getElementById("map-location-input")?.value || "";
+  try {
+    const [reports, events] = await Promise.all([
+      apiFetch(`/api/reports?location=${encodeURIComponent(loc)}`),
+      apiFetch(`/api/events?location=${encodeURIComponent(loc)}`)
+    ]);
+    state.reports = reports;
+    state.events = events;
+    initOrUpdateMap();
+    if (reports.length > 0 && reports[0].latitude && reports[0].longitude) {
+      state.map.setView([reports[0].latitude, reports[0].longitude], 13);
+    } else if (events.length > 0 && events[0].latitude && events[0].longitude) {
+      state.map.setView([events[0].latitude, events[0].longitude], 13);
+    }
+  } catch (err) {
+    showToast(err.message, "error");
+  }
 }
 
 async function loadLeaderboard() {

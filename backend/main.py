@@ -459,6 +459,7 @@ def get_waste_reports(
     status_filter: Optional[str] = Query(None, alias="status"),
     category: Optional[str] = None,
     severity: Optional[str] = None,
+    location: Optional[str] = None,
     search: Optional[str] = None,
     user_id: Optional[int] = None
 ):
@@ -482,6 +483,9 @@ def get_waste_reports(
     if severity and severity != 'All':
         query += " AND r.severity = ?"
         params.append(severity)
+    if location and location.strip():
+        query += " AND r.location_address LIKE ?"
+        params.append(f"%{location.strip()}%")
     if user_id:
         query += " AND r.user_id = ?"
         params.append(user_id)
@@ -587,6 +591,7 @@ def create_post(data: PostCreateSchema, current_user: dict = Depends(get_current
 @app.get("/api/posts")
 def get_posts(
     category: Optional[str] = None,
+    location: Optional[str] = None,
     search: Optional[str] = None,
     current_user: Optional[dict] = Depends(get_optional_current_user)
 ):
@@ -604,6 +609,10 @@ def get_posts(
     if category and category != 'All':
         query += " AND p.category = ?"
         params.append(category)
+    if location and location.strip():
+        query += " AND (p.location LIKE ? OR u.location LIKE ?)"
+        loc_term = f"%{location.strip()}%"
+        params.extend([loc_term, loc_term])
     if search:
         query += " AND (p.title LIKE ? OR p.content LIKE ? OR p.location LIKE ? OR u.username LIKE ?)"
         term = f"%{search}%"
@@ -796,6 +805,7 @@ def create_event(data: EventCreateSchema, current_user: dict = Depends(get_curre
 def get_events(
     category: Optional[str] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
+    location: Optional[str] = None,
     search: Optional[str] = None,
     current_user: Optional[dict] = Depends(get_optional_current_user)
 ):
@@ -817,6 +827,9 @@ def get_events(
     if status_filter and status_filter != 'All':
         query += " AND e.status = ?"
         params.append(status_filter)
+    if location and location.strip():
+        query += " AND e.location_address LIKE ?"
+        params.append(f"%{location.strip()}%")
     if search:
         query += " AND (e.name LIKE ? OR e.description LIKE ? OR e.location_address LIKE ?)"
         term = f"%{search}%"

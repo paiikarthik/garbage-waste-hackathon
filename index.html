@@ -198,11 +198,19 @@
           </button>
         </div>
 
-        <div class="flex flex-wrap gap-2 pb-2 border-b border-slate-200">
-          <button onclick="loadFeed('All')" class="px-4 py-1.5 bg-emerald-700 text-white font-semibold text-xs rounded-full">All Posts</button>
-          <button onclick="loadFeed('Awareness')" class="px-4 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-full hover:bg-slate-300">Awareness</button>
-          <button onclick="loadFeed('Cleanup')" class="px-4 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-full hover:bg-slate-300">Cleanup Updates</button>
-          <button onclick="loadFeed('Success Stories')" class="px-4 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-full hover:bg-slate-300">Success Stories</button>
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 pb-3 border-b border-slate-200">
+          <div class="flex flex-wrap gap-2">
+            <button onclick="loadFeed('All')" class="px-4 py-1.5 bg-emerald-700 text-white font-semibold text-xs rounded-full">All Posts</button>
+            <button onclick="loadFeed('Awareness')" class="px-4 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-full hover:bg-slate-300">Awareness</button>
+            <button onclick="loadFeed('Cleanup')" class="px-4 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-full hover:bg-slate-300">Cleanup Updates</button>
+            <button onclick="loadFeed('Success Stories')" class="px-4 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-full hover:bg-slate-300">Success Stories</button>
+          </div>
+
+          <!-- Location Filter Input -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <span class="material-symbols-outlined text-emerald-700 text-xl">location_on</span>
+            <input type="text" id="feed-location-input" onkeyup="loadFeed()" placeholder="Filter posts by location..." class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs outline-none bg-white w-full md:w-56 focus:border-emerald-600">
+          </div>
         </div>
 
         <div id="community-feed-container" class="space-y-5 max-w-3xl mx-auto"></div>
@@ -220,6 +228,44 @@
           </button>
         </div>
 
+        <!-- Waste Reports Location & Category Filter Bar -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-700 uppercase">Status:</span>
+              <select id="report-status-filter" onchange="loadWasteReports()" class="px-3 py-1.5 border rounded-lg text-xs outline-none bg-white">
+                <option value="All">All Statuses</option>
+                <option value="Reported">Reported</option>
+                <option value="Under Review">Under Review</option>
+                <option value="Assigned">Assigned</option>
+                <option value="Cleanup in Progress">Cleanup in Progress</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-700 uppercase">Category:</span>
+              <select id="report-category-filter" onchange="loadWasteReports()" class="px-3 py-1.5 border rounded-lg text-xs outline-none bg-white">
+                <option value="All">All Categories</option>
+                <option value="Plastic">Plastic</option>
+                <option value="Food waste">Food waste</option>
+                <option value="E-waste">E-waste</option>
+                <option value="Medical waste">Medical waste</option>
+                <option value="Construction waste">Construction waste</option>
+                <option value="Sewage">Sewage</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Location Filter Input -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <span class="material-symbols-outlined text-emerald-700 text-xl">location_on</span>
+            <input type="text" id="report-location-filter" onkeyup="loadWasteReports()" onchange="loadWasteReports()" placeholder="📍 Filter by Location / Address..." class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs outline-none bg-white w-full md:w-64 focus:border-emerald-600">
+          </div>
+        </div>
+
         <div id="waste-reports-list" class="space-y-4"></div>
       </section>
 
@@ -235,14 +281,55 @@
           </button>
         </div>
 
+        <!-- Events Location & Category Filter Bar -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-700 uppercase">Category:</span>
+              <select id="event-category-filter" onchange="loadEvents()" class="px-3 py-1.5 border rounded-lg text-xs outline-none bg-white">
+                <option value="All">All Categories</option>
+                <option value="Plastic">Plastic</option>
+                <option value="Mixed">Mixed</option>
+                <option value="Food waste">Food waste</option>
+                <option value="E-waste">E-waste</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-700 uppercase">Status:</span>
+              <select id="event-status-filter" onchange="loadEvents()" class="px-3 py-1.5 border rounded-lg text-xs outline-none bg-white">
+                <option value="All">All Events</option>
+                <option value="Upcoming" selected>Upcoming</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Location Filter Input -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <span class="material-symbols-outlined text-emerald-700 text-xl">location_on</span>
+            <input type="text" id="event-location-filter" onkeyup="loadEvents()" onchange="loadEvents()" placeholder="📍 Filter by Location / City..." class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs outline-none bg-white w-full md:w-64 focus:border-emerald-600">
+          </div>
+        </div>
+
         <div id="events-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
       </section>
 
       <!-- View: Interactive Map -->
       <section id="view-map" class="view-panel hidden space-y-6">
-        <div>
-          <h2 class="text-2xl font-black text-slate-900">Interactive Waste & Events Map</h2>
-          <p class="text-sm text-slate-500">Explore nearby reported waste issues and cleanup event locations.</p>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 class="text-2xl font-black text-slate-900">Interactive Waste & Events Map</h2>
+            <p class="text-sm text-slate-500">Explore nearby reported waste issues and cleanup event locations.</p>
+          </div>
+
+          <!-- Map Location Search/Filter -->
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <div class="flex items-center bg-white border border-slate-300 rounded-lg px-3 py-1.5 w-full sm:w-72 shadow-sm">
+              <span class="material-symbols-outlined text-emerald-700 text-xl mr-1">location_on</span>
+              <input type="text" id="map-location-input" onkeyup="if(event.key==='Enter') filterMapByLocation()" placeholder="Filter markers by location..." class="bg-transparent text-xs outline-none w-full">
+            </div>
+            <button onclick="filterMapByLocation()" class="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs">Filter</button>
+          </div>
         </div>
         <div id="leaflet-map"></div>
       </section>
