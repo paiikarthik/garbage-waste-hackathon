@@ -519,16 +519,16 @@ async function loadUserProfile(targetUserId = null) {
           <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
             <span>🎖️ Unlocked Eco Badges</span>
           </h3>
-          <div class="flex flex-wrap gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             ${profile.badges && profile.badges.length > 0 ? profile.badges.map(b => `
-              <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
-                <span class="text-2xl">${b.icon}</span>
+              <div class="eco-badge-card">
+                <div class="badge-shield badge-${b.code}">${b.icon}</div>
                 <div>
                   <h4 class="font-bold text-slate-800 text-sm">${b.name}</h4>
                   <p class="text-xs text-slate-500">${b.description}</p>
                 </div>
               </div>
-            `).join('') : '<p class="text-slate-500 text-sm">No badges unlocked yet.</p>'}
+            `).join('') : '<p class="text-slate-500 text-sm col-span-full">No badges unlocked yet.</p>'}
           </div>
         </div>
 
@@ -895,8 +895,8 @@ async function loadLeaderboard() {
           <img src="${u.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-12 h-12 rounded-full object-cover border-2 border-emerald-500 cursor-pointer" onclick="navigateTo('profile', ${u.id})">
           <div>
             <h4 class="font-bold text-slate-900 text-base cursor-pointer hover:underline" onclick="navigateTo('profile', ${u.id})">${u.full_name}</h4>
-            <div class="flex items-center gap-2 mt-1">
-              ${u.badges ? u.badges.map(b => `<span title="${b.name}">${b.icon}</span>`).join(' ') : ''}
+            <div class="flex items-center gap-1.5 mt-1">
+              ${u.badges ? u.badges.map(b => `<span class="badge-shield badge-${b.code} !w-6 !h-6 !text-xs !rounded-md" title="${b.name}">${b.icon}</span>`).join('') : ''}
               <span class="text-xs text-slate-500">@${u.username}</span>
             </div>
           </div>
