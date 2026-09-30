@@ -1245,6 +1245,42 @@ async function submitProfileUpdate(e) {
   }
 }
 
+// Global Search & Modal Auth Handlers
+async function performGlobalSearch() {
+  const query = document.getElementById("global-search-input")?.value.trim();
+  if (!query) return;
+  showToast(`Searching platform for "${query}"...`, "info");
+
+  const feedLoc = document.getElementById("feed-location-input");
+  if (feedLoc) feedLoc.value = query;
+  navigateTo("feed");
+}
+
+async function submitModalLogin(e) {
+  if (e) e.preventDefault();
+  const email = document.getElementById("loginEmail")?.value;
+  const password = document.getElementById("loginPass")?.value;
+  if (!email || !password) {
+    showToast("Please enter email and password.", "error");
+    return;
+  }
+  try {
+    const res = await apiFetch("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password })
+    });
+    if (res.token) {
+      localStorage.setItem("ecotrack_token", res.token);
+      state.token = res.token;
+    }
+    closeModal("loginModal");
+    showToast("Login successful!");
+    await checkAuth();
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
 // Initializer & Event Listeners
 document.addEventListener("DOMContentLoaded", async () => {
   await checkAuth();
@@ -1252,6 +1288,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Route URL hash
   window.addEventListener("hashchange", handleHashRoute);
   handleHashRoute();
+
+  // Modal Login Form
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) loginForm.addEventListener("submit", submitModalLogin);
 
   // Create Event Form
   const eventForm = document.getElementById("createEventForm");
@@ -1309,3 +1349,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 });
+
