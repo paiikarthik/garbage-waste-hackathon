@@ -25,7 +25,14 @@ from backend.auth import (
     get_admin_user, 
     generate_reset_token
 )
-from backend.ai_service import classify_waste_image, improve_post_with_ai, suggest_waste_description
+from backend.ai_service import (
+    classify_waste_image, 
+    improve_post_with_ai, 
+    suggest_waste_description,
+    answer_eco_chat,
+    calculate_environmental_impact,
+    optimize_cleanup_event
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOAD_DIR = BASE_DIR / "uploads"
@@ -154,6 +161,17 @@ class EventRecapSchema(BaseModel):
     waste_collected_kg: float
     waste_types_collected: str
 
+class PostUpdateSchema(BaseModel):
+    title: Optional[str] = None
+    content: str
+    category: Optional[str] = "Awareness"
+    image_url: Optional[str] = None
+    location: Optional[str] = None
+
+class AttendanceSchema(BaseModel):
+    user_id: int
+    attended: bool
+
 class AIPostImproveSchema(BaseModel):
     content: str
     title: Optional[str] = ""
@@ -161,6 +179,18 @@ class AIPostImproveSchema(BaseModel):
 class AISuggestDescSchema(BaseModel):
     category: str
     location: Optional[str] = ""
+
+class AIChatSchema(BaseModel):
+    query: str
+
+class AIImpactSchema(BaseModel):
+    waste_kg: float
+    category: Optional[str] = "Mixed"
+
+class AIOptimizeEventSchema(BaseModel):
+    location: str
+    waste_category: str
+    estimated_area_sqm: Optional[int] = 500
 
 # --- File Upload Endpoint ---
 
@@ -774,6 +804,46 @@ def report_post(post_id: int, data: PostReportSchema, current_user: dict = Depen
     conn.close()
     return {"status": "success", "message": "Post reported to moderators for review."}
 
+@app.put("/api/posts/{post_id}")
+def update_post(post_id: int, data: PostUpdateSchema, current_user: dict = Depends(get_current_user)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM posts WHERE id = ?", (post_id,))
+    post = cursor.fetchone()
+    if not post:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Post not found.")
+    if post["user_id"] != current_user["id"] and current_user["role"] != "admin":
+        conn.close()
+        raise HTTPException(status_code=403, detail="You can only edit your own posts.")
+    
+    cursor.execute("""
+        UPDATE posts 
+        SET title = ?, content = ?, category = ?, image_url = COALESCE(?, image_url), location = COALESCE(?, location), updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (data.title, data.content, data.category, data.image_url, data.location, post_id))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": "Post updated successfully."}
+
+@app.delete("/api/posts/{post_id}")
+def delete_post(post_id: int, current_user: dict = Depends(get_current_user)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM posts WHERE id = ?", (post_id,))
+    post = cursor.fetchone()
+    if not post:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Post not found.")
+    if post["user_id"] != current_user["id"] and current_user["role"] != "admin":
+        conn.close()
+        raise HTTPException(status_code=403, detail="You can only delete your own posts.")
+    
+    cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": "Post deleted successfully."}
+
 # --- Cleanup Events Routes ---
 
 @app.post("/api/events")
@@ -899,7 +969,7 @@ def get_event_detail(event_id: int, current_user: Optional[dict] = Depends(get_o
     
     # Participants list
     cursor.execute("""
-        SELECT u.id, u.username, u.full_name, u.profile_pic, ep.joined_at
+        SELECT u.id, u.username, u.full_name, u.profile_pic, ep.status as participant_status, ep.joined_at
         FROM event_participants ep
         JOIN users u ON ep.user_id = u.id
         WHERE ep.event_id = ?
@@ -1010,6 +1080,67 @@ def submit_event_recap(event_id: int, data: EventRecapSchema, current_user: dict
     conn.close()
     return {"status": "success", "message": "Event recap submitted successfully and marked as Completed!"}
 
+@app.post("/api/events/{event_id}/attendance")
+def mark_participant_attendance(event_id: int, data: AttendanceSchema, current_user: dict = Depends(get_current_user)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, organizer_id, name FROM events WHERE id = ?", (event_id,))
+    event = cursor.fetchone()
+    if not event:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Event not found.")
+        
+    if event["organizer_id"] != current_user["id"] and current_user["role"] != "admin":
+        conn.close()
+        raise HTTPException(status_code=403, detail="Only the event organizer can mark attendance.")
+        
+    new_status = "Attended" if data.attended else "Joined"
+    cursor.execute("UPDATE event_participants SET status = ? WHERE event_id = ? AND user_id = ?", (new_status, event_id, data.user_id))
+    
+    if data.attended:
+        award_points(cursor, data.user_id, 20, f"Attended Cleanup Event: {event['name']}")
+        send_notification(cursor, data.user_id, "Attendance Verified! ⭐", f"You were marked present for '{event['name']}' (+20 points)! Certificate now available.", "badge", f"#event-detail/{event_id}")
+    
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": f"Participant attendance updated to '{new_status}'."}
+
+@app.get("/api/events/{event_id}/certificate/{user_id}")
+def get_event_certificate(event_id: int, user_id: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT e.*, u.full_name as participant_name, u.username, org.full_name as organizer_name, ep.status as participant_status, ep.joined_at
+        FROM events e
+        JOIN event_participants ep ON e.id = ep.event_id
+        JOIN users u ON ep.user_id = u.id
+        JOIN users org ON e.organizer_id = org.id
+        WHERE e.id = ? AND ep.user_id = ?
+    """, (event_id, user_id))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Participant record not found for this event.")
+        
+    c = dict(row)
+    conn.close()
+    
+    cert_id = f"CERT-ECO-{event_id}-{user_id}-{hex(abs(hash(c['participant_name'])))[-6:].upper()}"
+    return {
+        "certificate_id": cert_id,
+        "participant_name": c["participant_name"],
+        "username": c["username"],
+        "event_name": c["name"],
+        "event_date": c["event_date"],
+        "location": c["location_address"],
+        "organizer_name": c["organizer_name"],
+        "waste_category": c["waste_category"],
+        "waste_collected_kg": c["waste_collected_kg"] or 50.0,
+        "status": c["status"],
+        "participant_status": c["participant_status"],
+        "issued_date": c["event_date"]
+    }
+
 # --- Notifications Routes ---
 
 @app.get("/api/notifications")
@@ -1048,6 +1179,21 @@ def ai_improve_post(data: AIPostImproveSchema):
 def ai_suggest_description(data: AISuggestDescSchema):
     """Generates waste report description from category."""
     return suggest_waste_description(data.category, data.location)
+
+@app.post("/api/ai/chat")
+def ai_chat_assistant(data: AIChatSchema):
+    """Interactive Eco Assistant Chatbot for waste, recycling, and composting advice."""
+    return answer_eco_chat(data.query)
+
+@app.post("/api/ai/calculate-impact")
+def ai_calculate_impact(data: AIImpactSchema):
+    """Calculates carbon footprint and environmental impact metrics per kg of waste."""
+    return calculate_environmental_impact(data.waste_kg, data.category)
+
+@app.post("/api/ai/optimize-event")
+def ai_optimize_event(data: AIOptimizeEventSchema):
+    """Optimizes cleanup event logistics, volunteer headcount, and safety gear."""
+    return optimize_cleanup_event(data.location, data.waste_category, data.estimated_area_sqm)
 
 # --- Global Search Route ---
 

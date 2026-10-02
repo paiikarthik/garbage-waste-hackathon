@@ -473,6 +473,13 @@
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Required Materials</label>
           <input type="text" id="eventMaterials" placeholder="Gloves, sun hat, reusable water bottle" class="w-full px-3 py-2 border rounded-lg outline-none">
         </div>
+
+        <div class="pt-1">
+          <button type="button" onclick="triggerAIOptimizeEvent()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs rounded-lg shadow flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">auto_awesome</span> Optimize Logistics with AI
+          </button>
+        </div>
+
         <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow">Publish Event (+50 pts)</button>
       </form>
     </div>
@@ -530,11 +537,109 @@
           <textarea id="editBio" rows="3" class="w-full px-3 py-2 border rounded-lg outline-none"></textarea>
         </div>
         <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Select Profile Picture from Gallery</label>
+          <input type="file" id="editProfilePicFile" accept="image/*" onchange="uploadProfilePicFromGallery(this)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200">
+        </div>
+        <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Profile Picture URL</label>
           <input type="text" id="editProfilePic" class="w-full px-3 py-2 border rounded-lg outline-none text-xs">
         </div>
         <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow">Save Changes</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Edit Post Modal -->
+  <div id="editPostModal" class="modal-backdrop">
+    <div class="modal-box p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-xl text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600">edit</span> Edit Post
+        </h3>
+        <button onclick="closeModal('editPostModal')" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </div>
+      <form id="editPostForm" class="space-y-4">
+        <input type="hidden" id="editPostId">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Post Title</label>
+          <input type="text" id="editPostTitle" placeholder="Post Title" class="w-full px-3 py-2 border rounded-lg outline-none font-bold">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Post Content</label>
+          <textarea id="editPostContent" rows="4" required placeholder="Write post content..." class="w-full px-3 py-2 border rounded-lg outline-none text-sm leading-relaxed"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Category</label>
+          <select id="editPostCategory" class="w-full px-3 py-2 border rounded-lg outline-none bg-white text-xs font-semibold">
+            <option value="Awareness">Awareness</option>
+            <option value="Cleanup">Cleanup Updates</option>
+            <option value="Success Stories">Success Stories</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Certificate Modal -->
+  <div id="certificateModal" class="modal-backdrop">
+    <div class="modal-box p-6 space-y-4 max-w-2xl">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-xl text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-500">workspace_premium</span> EcoTrack Certificate of Appreciation
+        </h3>
+        <button onclick="closeModal('certificateModal')" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </div>
+      
+      <div id="certificate-print-area" class="bg-gradient-to-br from-emerald-50 via-teal-50 to-amber-50 border-4 border-emerald-600 p-8 rounded-2xl text-center space-y-4 shadow-xl relative">
+        <div class="flex justify-between items-center border-b-2 border-emerald-300 pb-4">
+          <div class="flex items-center gap-2 font-black text-xl text-emerald-800">
+            <span class="material-symbols-outlined text-3xl text-emerald-600">nest_eco_leaf</span> EcoTrack
+          </div>
+          <span id="cert-id" class="text-xs font-mono text-emerald-800 font-bold bg-emerald-200/60 px-2.5 py-1 rounded border border-emerald-300">CERT-ECO-12345</span>
+        </div>
+        
+        <h2 class="text-xs uppercase font-extrabold tracking-widest text-emerald-800">CERTIFICATE OF APPRECIATION</h2>
+        <p class="text-xs text-slate-600 font-medium">This certificate is proudly awarded to</p>
+        <h1 id="cert-name" class="text-3xl font-black text-slate-900 underline decoration-emerald-500">Participant Name</h1>
+        
+        <p class="text-sm text-slate-700 leading-relaxed max-w-lg mx-auto">
+          In recognition of outstanding community dedication and active volunteer service during the environmental cleanup drive: <br>
+          <strong id="cert-event" class="text-emerald-900 text-base">Panambur Beach Cleanup Drive</strong>
+        </p>
+        
+        <div class="grid grid-cols-3 gap-3 pt-4 border-t border-emerald-200 text-xs">
+          <div>
+            <span class="text-slate-500 block font-bold">Event Date</span>
+            <strong id="cert-date" class="text-slate-800">2026-10-15</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block font-bold">Waste Collected</span>
+            <strong id="cert-waste" class="text-slate-800">120 kg</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block font-bold">Organizer</span>
+            <strong id="cert-organizer" class="text-slate-800">EcoTrack Team</strong>
+          </div>
+        </div>
+        
+        <div class="pt-4 flex justify-between items-end">
+          <div class="text-left">
+            <span class="text-[10px] text-slate-400 block font-mono">VERIFIED ECO BADGE</span>
+            <span class="inline-block bg-amber-400 text-slate-950 text-xs font-extrabold px-3 py-1 rounded-full border border-amber-500 shadow-sm">🌱 Verified Clean & Green Volunteer</span>
+          </div>
+          <div class="text-right">
+            <div class="font-serif italic font-bold text-emerald-900 border-b border-slate-400 px-4 py-1">EcoTrack Board</div>
+            <span class="text-[10px] text-slate-500">Authorized Officer Signature</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 pt-2">
+        <button onclick="window.print()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow">
+          <span class="material-symbols-outlined text-base">print</span> Print / Download Certificate PDF
+        </button>
+      </div>
     </div>
   </div>
 
@@ -682,10 +787,40 @@
         </div>
 
         <div class="grid grid-cols-3 gap-3 pt-2">
-          <a id="shareWhatsApp" target="_blank" class="py-2.5 bg-green-500 text-white font-bold rounded-lg text-center text-xs flex items-center justify-center gap-1"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-          <a id="shareFacebook" target="_blank" class="py-2.5 bg-blue-600 text-white font-bold rounded-lg text-center text-xs flex items-center justify-center gap-1"><i class="fa-brands fa-facebook"></i> Facebook</a>
-          <a id="shareTwitter" target="_blank" class="py-2.5 bg-slate-900 text-white font-bold rounded-lg text-center text-xs flex items-center justify-center gap-1"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+  <!-- Floating EcoBot AI Chat Widget -->
+  <div id="ecobot-widget" class="fixed bottom-6 right-6 z-50">
+    <button onclick="toggleEcoBot()" class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-3.5 sm:px-4 sm:py-3 rounded-full shadow-2xl hover:scale-105 transition flex items-center gap-2 font-bold border-2 border-emerald-400">
+      <span class="material-symbols-outlined text-2xl">smart_toy</span>
+      <span class="hidden sm:inline text-xs font-bold">Ask EcoBot AI</span>
+    </button>
+
+    <div id="ecobot-panel" class="hidden absolute bottom-16 right-0 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-96">
+      <div class="bg-gradient-to-r from-emerald-800 to-teal-900 text-white p-3 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-400">smart_toy</span>
+          <div>
+            <h4 class="font-bold text-sm">EcoBot AI Assistant</h4>
+            <p class="text-[10px] text-emerald-200">Instant recycling & eco guidance</p>
+          </div>
         </div>
+        <button onclick="toggleEcoBot()" class="text-white hover:text-slate-300 font-bold text-lg">&times;</button>
+      </div>
+
+      <div id="ecobot-messages" class="flex-1 p-3 overflow-y-auto space-y-3 text-xs">
+        <div class="p-2.5 bg-emerald-50 text-emerald-950 rounded-xl border border-emerald-200">
+          Hello! 🌍 I am EcoBot, your AI Assistant. Ask me anything about recycling rules, composting, reporting waste, or organizing cleanup drives!
+        </div>
+      </div>
+
+      <div id="ecobot-suggestions" class="px-3 py-1.5 flex flex-wrap gap-1 bg-slate-50 border-t text-[10px]">
+        <button onclick="sendEcoBotMessage('How do I recycle plastic?')" class="px-2 py-0.5 bg-white border rounded-full text-slate-700 hover:bg-emerald-50">How to recycle plastic?</button>
+        <button onclick="sendEcoBotMessage('Composting tips')" class="px-2 py-0.5 bg-white border rounded-full text-slate-700 hover:bg-emerald-50">Composting tips</button>
+        <button onclick="sendEcoBotMessage('How to earn points?')" class="px-2 py-0.5 bg-white border rounded-full text-slate-700 hover:bg-emerald-50">How to earn points?</button>
+      </div>
+
+      <div class="p-2 border-t flex gap-2 bg-white">
+        <input type="text" id="ecobot-input" onkeyup="if(event.key==='Enter') sendEcoBotMessage()" placeholder="Ask EcoBot a question..." class="flex-1 px-3 py-1.5 border rounded-lg text-xs outline-none focus:border-emerald-600">
+        <button onclick="sendEcoBotMessage()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs">Send</button>
       </div>
     </div>
   </div>

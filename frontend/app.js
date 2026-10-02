@@ -270,7 +270,11 @@ async function loadFeed(category = "All") {
       return;
     }
 
-    feedContainer.innerHTML = posts.map(p => `
+    feedContainer.innerHTML = posts.map(p => {
+      const isOwner = state.user && (state.user.id === p.user_id || state.user.role === 'admin');
+      const safeTitle = encodeURIComponent(p.title || '');
+      const safeContent = encodeURIComponent(p.content || '');
+      return `
       <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
         <div class="flex justify-between items-center">
           <div class="flex items-center gap-3">
@@ -280,7 +284,17 @@ async function loadFeed(category = "All") {
               <p class="text-xs text-slate-500">@${p.username} • ${new Date(p.created_at).toLocaleDateString()}</p>
             </div>
           </div>
-          <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">${p.category}</span>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">${p.category}</span>
+            ${isOwner ? `
+              <button onclick="openEditPostModal(${p.id}, '${safeTitle}', '${safeContent}', '${p.category}')" class="p-1 text-slate-400 hover:text-emerald-600 rounded" title="Edit Post">
+                <span class="material-symbols-outlined text-base">edit</span>
+              </button>
+              <button onclick="deletePostConfirm(${p.id})" class="p-1 text-slate-400 hover:text-red-600 rounded" title="Delete Post">
+                <span class="material-symbols-outlined text-base">delete</span>
+              </button>
+            ` : ''}
+          </div>
         </div>
 
         <div>
@@ -309,7 +323,8 @@ async function loadFeed(category = "All") {
           </button>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   } catch (err) {
     showToast(err.message, "error");
   }
@@ -776,7 +791,7 @@ async function loadEventDetail(eventId) {
               <p>🎒 Required Materials: <strong>${event.required_materials || 'None specified'}</strong></p>
             </div>
 
-            <div class="pt-3 flex gap-3">
+            <div class="pt-3 flex flex-wrap gap-3">
               ${event.is_joined ? `
                 <button onclick="leaveEvent(${event.id})" class="px-5 py-2.5 bg-red-100 text-red-700 hover:bg-red-200 font-bold rounded-xl text-sm">Leave Event</button>
               ` : `
@@ -785,23 +800,43 @@ async function loadEventDetail(eventId) {
               ${isOrganizer && event.status !== 'Completed' ? `
                 <button onclick="openEventRecapModal(${event.id})" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm shadow">Submit Event Recap</button>
               ` : ''}
+              ${event.status === 'Completed' ? `
+                <button onclick="openEventCertificate(${event.id})" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-sm shadow flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-base">workspace_premium</span> Generate Certificate
+                </button>
+              ` : ''}
             </div>
           </div>
         </div>
 
-        <!-- Participants List -->
+        <!-- Participants & Attendance List -->
         <div class="border-t pt-6 space-y-4">
-          <h3 class="font-bold text-slate-900 text-lg">Registered Participants (${event.participants.length} / ${event.max_participants})</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            ${event.participants.map(p => `
-              <div class="p-3 bg-slate-50 border rounded-xl flex items-center gap-3 cursor-pointer" onclick="navigateTo('profile', ${p.id})">
-                <img src="${p.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-8 h-8 rounded-full object-cover">
-                <div>
-                  <h5 class="font-bold text-slate-800 text-xs">${p.full_name}</h5>
-                  <span class="text-xs text-slate-500">@${p.username}</span>
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-slate-900 text-lg">Registered Participants (${event.participants.length} / ${event.max_participants})</h3>
+            ${isOrganizer ? `<span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Mark Attendance (+20 pts)</span>` : ''}
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            ${event.participants.map(p => {
+              const isAttended = p.participant_status === 'Attended';
+              return `
+              <div class="p-3 bg-slate-50 border rounded-xl flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('profile', ${p.id})">
+                  <img src="${p.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-9 h-9 rounded-full object-cover">
+                  <div>
+                    <h5 class="font-bold text-slate-800 text-xs">${p.full_name}</h5>
+                    <span class="text-xs text-slate-500">@${p.username}</span>
+                  </div>
                 </div>
+                ${isOrganizer ? `
+                  <button onclick="toggleAttendance(${event.id}, ${p.id}, ${!isAttended})" class="px-2.5 py-1 text-xs font-bold rounded-lg border transition ${isAttended ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-white text-slate-600 hover:bg-emerald-50'}">
+                    ${isAttended ? '✓ Present' : '+ Mark Present'}
+                  </button>
+                ` : `
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isAttended ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">${p.participant_status || 'Joined'}</span>
+                `}
               </div>
-            `).join('')}
+            `;
+            }).join('')}
           </div>
         </div>
       </div>
@@ -1281,6 +1316,190 @@ async function submitModalLogin(e) {
   }
 }
 
+// Gallery Profile Picture Upload Handler
+async function uploadProfilePicFromGallery(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  showToast("Uploading profile picture from gallery...", "info");
+  try {
+    const res = await apiFetch("/api/upload", { method: "POST", body: formData });
+    const picInput = document.getElementById("editProfilePic");
+    if (picInput) picInput.value = res.url;
+    showToast("Profile picture uploaded successfully from gallery!");
+  } catch (err) {
+    showToast("Gallery upload failed: " + err.message, "error");
+  }
+}
+
+// Post Edit & Delete Handlers
+function openEditPostModal(postId, encodedTitle, encodedContent, category) {
+  document.getElementById("editPostId").value = postId;
+  document.getElementById("editPostTitle").value = decodeURIComponent(encodedTitle);
+  document.getElementById("editPostContent").value = decodeURIComponent(encodedContent);
+  document.getElementById("editPostCategory").value = category;
+  openModal("editPostModal");
+}
+
+async function submitPostUpdate(e) {
+  if (e) e.preventDefault();
+  const postId = document.getElementById("editPostId").value;
+  const payload = {
+    title: document.getElementById("editPostTitle").value,
+    content: document.getElementById("editPostContent").value,
+    category: document.getElementById("editPostCategory").value
+  };
+
+  try {
+    await apiFetch(`/api/posts/${postId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    });
+    closeModal("editPostModal");
+    showToast("Post updated successfully!");
+    if (state.activeView === "post-detail") {
+      loadPostDetail(postId);
+    } else {
+      loadFeed();
+    }
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+async function deletePostConfirm(postId) {
+  if (!confirm("Are you sure you want to delete this post?")) return;
+  try {
+    await apiFetch(`/api/posts/${postId}`, { method: "DELETE" });
+    showToast("Post deleted successfully.");
+    if (state.activeView === "post-detail") {
+      navigateTo("feed");
+    } else {
+      loadFeed();
+    }
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+// Event Attendance & Certificate Handlers
+async function toggleAttendance(eventId, userId, attended) {
+  try {
+    const res = await apiFetch(`/api/events/${eventId}/attendance`, {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId, attended: attended })
+    });
+    showToast(res.message);
+    loadEventDetail(eventId);
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+async function openEventCertificate(eventId, userId = null) {
+  const targetId = userId || (state.user ? state.user.id : null);
+  if (!targetId) {
+    showToast("Please login to view/download your certificate.", "error");
+    openModal("loginModal");
+    return;
+  }
+
+  try {
+    const cert = await apiFetch(`/api/events/${eventId}/certificate/${targetId}`);
+    document.getElementById("cert-id").innerText = cert.certificate_id;
+    document.getElementById("cert-name").innerText = cert.participant_name;
+    document.getElementById("cert-event").innerText = cert.event_name;
+    document.getElementById("cert-date").innerText = cert.event_date;
+    document.getElementById("cert-waste").innerText = `${cert.waste_collected_kg} kg`;
+    document.getElementById("cert-organizer").innerText = cert.organizer_name;
+    openModal("certificateModal");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+// AI Feature Handlers (EcoBot & Event Optimizer)
+function toggleEcoBot() {
+  const panel = document.getElementById("ecobot-panel");
+  if (panel) panel.classList.toggle("hidden");
+}
+
+async function sendEcoBotMessage(customText = null) {
+  const input = document.getElementById("ecobot-input");
+  const query = customText || (input ? input.value.trim() : "");
+  if (!query) return;
+
+  const msgs = document.getElementById("ecobot-messages");
+  if (msgs) {
+    msgs.innerHTML += `
+      <div class="p-2.5 bg-emerald-600 text-white rounded-xl text-right ml-6 font-medium shadow-sm">
+        ${query}
+      </div>
+    `;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  if (input) input.value = "";
+
+  try {
+    const res = await apiFetch("/api/ai/chat", {
+      method: "POST",
+      body: JSON.stringify({ query: query })
+    });
+
+    if (msgs) {
+      msgs.innerHTML += `
+        <div class="p-2.5 bg-emerald-50 text-emerald-950 rounded-xl border border-emerald-200 mr-4 leading-relaxed whitespace-pre-line">
+          ${res.reply}
+        </div>
+      `;
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    const sugs = document.getElementById("ecobot-suggestions");
+    if (sugs && res.suggestions) {
+      sugs.innerHTML = res.suggestions.map(s => `
+        <button onclick="sendEcoBotMessage('${s}')" class="px-2 py-0.5 bg-white border rounded-full text-slate-700 hover:bg-emerald-50 text-[10px]">${s}</button>
+      `).join('');
+    }
+  } catch (err) {
+    if (msgs) {
+      msgs.innerHTML += `<div class="p-2 bg-red-50 text-red-600 rounded text-xs">EcoBot is offline. Please try again.</div>`;
+    }
+  }
+}
+
+async function triggerAIOptimizeEvent() {
+  const location = document.getElementById("eventAddress")?.value || "Beach / City Site";
+  const wasteCategory = document.getElementById("eventWasteCat")?.value || "Mixed";
+  
+  showToast("🤖 AI optimizing cleanup event logistics...", "info");
+  try {
+    const res = await apiFetch("/api/ai/optimize-event", {
+      method: "POST",
+      body: JSON.stringify({ location: location, waste_category: wasteCategory, estimated_area_sqm: 500 })
+    });
+
+    const maxPart = document.getElementById("eventMaxPart");
+    if (maxPart) maxPart.value = res.recommended_volunteers;
+
+    const matInput = document.getElementById("eventMaterials");
+    if (matInput) matInput.value = res.recommended_equipment.join(", ");
+
+    const descInput = document.getElementById("eventDesc");
+    if (descInput && !descInput.value) {
+      descInput.value = `${res.title_suggestion}\n\nEstimated Duration: ${res.estimated_duration_hours} hours | Target Waste: ${res.estimated_waste_collection_kg} kg.\n\nSafety Notes: ${res.safety_instructions}`;
+    }
+
+    showToast("Event logistics optimized with AI!");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
 // Initializer & Event Listeners
 document.addEventListener("DOMContentLoaded", async () => {
   await checkAuth();
@@ -1292,6 +1511,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Modal Login Form
   const loginForm = document.getElementById("loginForm");
   if (loginForm) loginForm.addEventListener("submit", submitModalLogin);
+
+  // Edit Post Form
+  const editPostForm = document.getElementById("editPostForm");
+  if (editPostForm) editPostForm.addEventListener("submit", submitPostUpdate);
 
   // Create Event Form
   const eventForm = document.getElementById("createEventForm");

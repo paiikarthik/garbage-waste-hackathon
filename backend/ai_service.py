@@ -141,3 +141,102 @@ def suggest_waste_description(category: str, location: str = "") -> Dict[str, An
         "category": category,
         "recommended_severity": "High" if category in ["Medical waste", "E-waste", "Sewage"] else "Medium"
     }
+
+def answer_eco_chat(query: str, history: List[Dict[str, str]] = None) -> Dict[str, Any]:
+    """
+    AI Eco Assistant Chatbot: Intelligent conversational AI providing expert 
+    advice on waste management, recycling guidelines, composting, and eco habits.
+    """
+    q_lower = query.lower().strip()
+    
+    if any(k in q_lower for k in ['hi', 'hello', 'hey', 'start']):
+        reply = "Hello! 🌍 I am EcoBot, your EcoTrack AI Assistant. Ask me anything about waste recycling, composting, reporting illegal dumps, or organizing cleanup drives!"
+        suggestions = ["How do I recycle plastic?", "What is e-waste?", "How to make compost at home?"]
+    elif any(k in q_lower for k in ['plastic', 'bottle', 'container']):
+        reply = "♻️ **Plastic Recycling Guide**:\n• Wash & dry plastic containers before binning.\n• Check resin identification codes (#1 PET and #2 HDPE are widely recyclable).\n• Avoid burning plastic—it releases toxic dioxins!"
+        suggestions = ["Where to dispose plastic?", "How does plastic harm ocean life?", "Single-use plastic alternatives"]
+    elif any(k in q_lower for k in ['food', 'organic', 'compost', 'kitchen']):
+        reply = "🌱 **Composting Guide**:\n• Mix Green Waste (fruit peels, coffee grounds) with Brown Waste (dry leaves, cardboard).\n• Keep moisture balanced like a damp sponge.\n• Aerate every 5-7 days for rich, odor-free soil compost in 3-4 weeks!"
+        suggestions = ["What cannot be composted?", "Food waste prevention tips", "Community composting"]
+    elif any(k in q_lower for k in ['e-waste', 'electronic', 'phone', 'battery', 'computer']):
+        reply = "⚡ **E-Waste Management**:\n• Never discard electronics or lithium batteries in household trash—they contain lead, mercury, and cadmium.\n• Deposit at authorized EcoTrack E-Waste drop-off points or certified recyclers."
+        suggestions = ["Safe battery disposal", "E-waste collection points", "How is e-waste recycled?"]
+    elif any(k in q_lower for k in ['medical', 'syringe', 'needle', 'medicine', 'hazard']):
+        reply = "⚠️ **Hazardous & Medical Waste Safety**:\n• Place sharps/syringes in rigid puncture-proof containers.\n• Return unused medicines to pharmacy takeaway programs or designated biohazard bins."
+        suggestions = ["Biohazard waste rules", "Mask disposal tips", "Chemical waste safety"]
+    elif any(k in q_lower for k in ['event', 'cleanup', 'drive', 'organize']):
+        reply = "🧹 **Cleanup Event Strategy**:\n1. Choose an accessible public site with high waste accumulation.\n2. Equip volunteers with heavy-duty gloves, trash bags, & first-aid kits.\n3. Pre-arrange waste pickup with local municipal services or recyclers!"
+        suggestions = ["How to earn impact points?", "Event recap guidelines", "Safety rules for cleanups"]
+    elif any(k in q_lower for k in ['report', 'points', 'leaderboard', 'badge']):
+        reply = "🏆 **EcoTrack Rewards & Badges**:\n• Submit a Waste Report: **+10 pts**\n• Publish an Eco Post: **+5 pts**\n• Organize Cleanup Drive: **+50 pts** (+30 recap bonus!)\n• Unlock 3D metallic badges as you rank up on the Leaderboard!"
+        suggestions = ["How to view my badges?", "Report waste tracking", "Admin review process"]
+    else:
+        reply = f"🌱 Thanks for asking about '{query}'! To build a zero-waste community:\n1. Segregate waste at source (Wet, Dry, E-Waste).\n2. Report illegal dump sites via EcoTrack.\n3. Join local cleanup drives to earn impact points!"
+        suggestions = ["How to recycle plastic?", "Composting tips", "How to organize a cleanup?"]
+
+    return {
+        "query": query,
+        "reply": reply,
+        "suggestions": suggestions
+    }
+
+def calculate_environmental_impact(waste_kg: float, category: str = "Mixed") -> Dict[str, Any]:
+    """
+    AI Carbon Footprint & Waste Impact Estimator: Calculates environmental metrics 
+    saved per kilogram of waste collected and diverted from landfills.
+    """
+    kg = max(0.1, float(waste_kg))
+
+    multipliers = {
+        "Plastic": {"co2": 2.5, "trees": 0.05, "landfill_m3": 0.003, "energy_kwh": 5.8},
+        "Food waste": {"co2": 1.8, "trees": 0.02, "landfill_m3": 0.002, "energy_kwh": 2.1},
+        "E-waste": {"co2": 4.2, "trees": 0.08, "landfill_m3": 0.004, "energy_kwh": 12.5},
+        "Construction waste": {"co2": 0.9, "trees": 0.01, "landfill_m3": 0.001, "energy_kwh": 1.2},
+        "Mixed": {"co2": 2.1, "trees": 0.04, "landfill_m3": 0.0025, "energy_kwh": 4.5}
+    }
+    m = multipliers.get(category, multipliers["Mixed"])
+
+    co2_saved = round(kg * m["co2"], 2)
+    trees_equivalent = round(kg * m["trees"], 2)
+    landfill_saved_m3 = round(kg * m["landfill_m3"], 3)
+    energy_saved_kwh = round(kg * m["energy_kwh"], 2)
+
+    return {
+        "waste_kg": kg,
+        "category": category,
+        "co2_saved_kg": co2_saved,
+        "trees_equivalent": trees_equivalent,
+        "landfill_saved_m3": landfill_saved_m3,
+        "energy_saved_kwh": energy_saved_kwh,
+        "summary": f"Collecting {kg} kg of {category} prevents ~{co2_saved} kg of CO₂ emissions, saves {energy_saved_kwh} kWh of energy, and equals planting {trees_equivalent} trees!"
+    }
+
+def optimize_cleanup_event(location: str, waste_category: str, estimated_area_sqm: int = 500) -> Dict[str, Any]:
+    """
+    AI Cleanup Drive Organizer: Uses spatial heuristics to calculate recommended volunteer headcount, 
+    required safety gear, estimated cleanup hours, and risk warnings.
+    """
+    area = max(50, int(estimated_area_sqm))
+    rec_volunteers = max(5, round(area / 35))
+    est_hours = round(max(1.5, area / 250), 1)
+    est_waste_kg = round(area * 0.45, 1)
+
+    gear = ["Heavy-Duty Work Gloves", "Trash Grabbers / Tongs", "Color-Coded Garbage Bags (Wet/Dry)", "High-Visibility Vests", "First Aid Kit"]
+    if waste_category in ["Medical waste", "E-waste", "Sewage"]:
+        gear.append("N95 / Biohazard Face Masks")
+        gear.append("Thick Rubber Safety Boots")
+
+    safety_notes = "Maintain hydration stations, wear closed-toe shoes, and do not touch sharp or suspicious chemical containers without tongs."
+    
+    return {
+        "location": location,
+        "waste_category": waste_category,
+        "estimated_area_sqm": area,
+        "recommended_volunteers": rec_volunteers,
+        "estimated_duration_hours": est_hours,
+        "estimated_waste_collection_kg": est_waste_kg,
+        "recommended_equipment": gear,
+        "safety_instructions": safety_notes,
+        "title_suggestion": f"Community {waste_category} Cleanup at {location or 'Local Site'}"
+    }
+

@@ -133,6 +133,21 @@ def test_ai_services():
     assert ai_desc.status_code == 200
     assert "plastic" in ai_desc.json()["description"].lower()
 
+    # EcoBot Chat
+    ai_chat = client.post("/api/ai/chat", json={"query": "How do I recycle plastic?"})
+    assert ai_chat.status_code == 200
+    assert "Plastic" in ai_chat.json()["reply"]
+
+    # Impact Calculator
+    ai_impact = client.post("/api/ai/calculate-impact", json={"waste_kg": 100, "category": "Plastic"})
+    assert ai_impact.status_code == 200
+    assert ai_impact.json()["co2_saved_kg"] > 0
+
+    # Event Optimizer
+    ai_opt = client.post("/api/ai/optimize-event", json={"location": "Beach", "waste_category": "Plastic", "estimated_area_sqm": 500})
+    assert ai_opt.status_code == 200
+    assert ai_opt.json()["recommended_volunteers"] > 0
+
 def test_admin_authorization():
     # Admin Login
     admin_res = client.post("/api/auth/login", json={
@@ -145,3 +160,29 @@ def test_admin_authorization():
     stats_res = client.get("/api/admin/stats", headers={"Authorization": f"Bearer {admin_token}"})
     assert stats_res.status_code == 200
     assert "total_users" in stats_res.json()
+
+def test_post_edit_delete_and_certificate():
+    login_res = client.post("/api/auth/login", json={
+        "email": "karthik@ecotrack.org",
+        "password": "user123"
+    })
+    token = login_res.json()["token"]
+    user_id = login_res.json()["user"]["id"]
+
+    # Create post
+    post_res = client.post("/api/posts", json={"title": "Original Title", "content": "Original content"}, headers={"Authorization": f"Bearer {token}"})
+    post_id = post_res.json()["post_id"]
+
+    # Edit post
+    put_res = client.put(f"/api/posts/{post_id}", json={"title": "Updated Title", "content": "Updated content", "category": "Awareness"}, headers={"Authorization": f"Bearer {token}"})
+    assert put_res.status_code == 200
+
+    # Delete post
+    del_res = client.delete(f"/api/posts/{post_id}", headers={"Authorization": f"Bearer {token}"})
+    assert del_res.status_code == 200
+
+    # Certificate test on seeded event 1
+    cert_res = client.get(f"/api/events/1/certificate/{user_id}")
+    assert cert_res.status_code == 200
+    assert "certificate_id" in cert_res.json()
+
