@@ -434,8 +434,13 @@ async function loadEvents() {
 
           <div class="pt-2 flex gap-2">
             <button onclick="navigateTo('event-detail', ${e.id})" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-lg text-sm text-center">Details</button>
+            ${(state.user && (state.user.id === e.organizer_id || state.user.role === 'admin')) ? `
+              <button onclick="deleteEventConfirm(${e.id})" class="px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 font-semibold rounded-lg text-sm flex items-center justify-center gap-1" title="Delete Event">
+                <span class="material-symbols-outlined text-base">delete</span>
+              </button>
+            ` : ''}
             ${e.is_joined ? `
-              <button onclick="leaveEvent(${e.id})" class="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 font-semibold rounded-lg text-sm">Leave</button>
+              <button onclick="leaveEvent(${e.id})" class="px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 font-semibold rounded-lg text-sm">Leave</button>
             ` : `
               <button onclick="joinEvent(${e.id})" class="px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 font-semibold rounded-lg text-sm">Join Event</button>
             `}
@@ -653,6 +658,7 @@ async function loadMyActivity() {
                   ${e.status !== 'Completed' ? `
                     <button onclick="openEventRecapModal(${e.id})" class="px-3 py-1 bg-amber-600 text-white text-xs font-bold rounded-lg">Mark Recap</button>
                   ` : ''}
+                  <button onclick="deleteEventConfirm(${e.id})" class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700">Delete</button>
                 </div>
               </div>
             `).join('') : '<p class="text-slate-500 text-sm">You haven\'t organized any cleanup events yet.</p>'}
@@ -793,12 +799,17 @@ async function loadEventDetail(eventId) {
 
             <div class="pt-3 flex flex-wrap gap-3">
               ${event.is_joined ? `
-                <button onclick="leaveEvent(${event.id})" class="px-5 py-2.5 bg-red-100 text-red-700 hover:bg-red-200 font-bold rounded-xl text-sm">Leave Event</button>
+                <button onclick="leaveEvent(${event.id})" class="px-5 py-2.5 bg-slate-200 text-slate-700 hover:bg-slate-300 font-bold rounded-xl text-sm">Leave Event</button>
               ` : `
                 <button onclick="joinEvent(${event.id})" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow">Join Cleanup Event</button>
               `}
               ${isOrganizer && event.status !== 'Completed' ? `
                 <button onclick="openEventRecapModal(${event.id})" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm shadow">Submit Event Recap</button>
+              ` : ''}
+              ${(isOrganizer || (state.user && state.user.role === 'admin')) ? `
+                <button onclick="deleteEventConfirm(${event.id})" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm shadow flex items-center gap-1">
+                  <span class="material-symbols-outlined text-base">delete</span> Delete Event
+                </button>
               ` : ''}
               ${event.status === 'Completed' ? `
                 <button onclick="openEventCertificate(${event.id})" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-sm shadow flex items-center gap-1.5">
@@ -1379,6 +1390,23 @@ async function deletePostConfirm(postId) {
       navigateTo("feed");
     } else {
       loadFeed();
+    }
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+async function deleteEventConfirm(eventId) {
+  if (!confirm("Are you sure you want to delete this cleanup event?")) return;
+  try {
+    const res = await apiFetch(`/api/events/${eventId}`, { method: "DELETE" });
+    showToast(res.message);
+    if (state.activeView === "event-detail") {
+      navigateTo("events");
+    } else if (state.activeView === "my-activity") {
+      loadMyActivity();
+    } else {
+      loadEvents();
     }
   } catch (err) {
     showToast(err.message, "error");

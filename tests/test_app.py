@@ -186,3 +186,19 @@ def test_post_edit_delete_and_certificate():
     assert cert_res.status_code == 200
     assert "certificate_id" in cert_res.json()
 
+    # Event Creation & Deletion
+    evt_res = client.post("/api/events", json={
+        "name": "Temporary Event To Delete",
+        "description": "Short description",
+        "event_date": "2026-12-01",
+        "start_time": "09:00 AM",
+        "end_time": "11:00 AM",
+        "location_address": "Test Site"
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert evt_res.status_code == 200
+    evt_id = evt_res.json()["event_id"]
+
+    del_evt = client.delete(f"/api/events/{evt_id}", headers={"Authorization": f"Bearer {token}"})
+    assert del_evt.status_code == 200
+
+

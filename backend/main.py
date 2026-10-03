@@ -1080,6 +1080,25 @@ def submit_event_recap(event_id: int, data: EventRecapSchema, current_user: dict
     conn.close()
     return {"status": "success", "message": "Event recap submitted successfully and marked as Completed!"}
 
+@app.delete("/api/events/{event_id}")
+def delete_event(event_id: int, current_user: dict = Depends(get_current_user)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, organizer_id, name FROM events WHERE id = ?", (event_id,))
+    event = cursor.fetchone()
+    if not event:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Event not found.")
+        
+    if event["organizer_id"] != current_user["id"] and current_user["role"] != "admin":
+        conn.close()
+        raise HTTPException(status_code=403, detail="Only the event organizer can delete this event.")
+        
+    cursor.execute("DELETE FROM events WHERE id = ?", (event_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": f"Event '{event['name']}' has been deleted."}
+
 @app.post("/api/events/{event_id}/attendance")
 def mark_participant_attendance(event_id: int, data: AttendanceSchema, current_user: dict = Depends(get_current_user)):
     conn = get_db()
