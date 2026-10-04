@@ -120,7 +120,7 @@ The server will initialize the SQLite database `ecotrack.db`, seed sample data &
 
 ---
 
-## 🧪 Running Automated Tests
+## Running Automated Tests
 
 To execute the Pytest test suite:
 
