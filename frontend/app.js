@@ -576,15 +576,25 @@ async function loadUserProfile(targetUserId = null) {
         <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
           <h3 class="font-bold text-slate-900 text-lg">User Activity & Posts</h3>
           <div class="space-y-3">
-            ${profile.recent_posts && profile.recent_posts.length > 0 ? profile.recent_posts.map(p => `
+            ${profile.recent_posts && profile.recent_posts.length > 0 ? profile.recent_posts.map(p => {
+              const safeTitle = encodeURIComponent(p.title || '');
+              const safeContent = encodeURIComponent(p.content || '');
+              return `
               <div class="p-4 bg-slate-50 border rounded-xl flex justify-between items-center">
                 <div>
                   <h4 class="font-bold text-slate-800 text-sm">${p.title || 'Community Post'}</h4>
                   <p class="text-xs text-slate-500 line-clamp-1 mt-1">${p.content}</p>
                 </div>
-                <button onclick="navigateTo('post-detail', ${p.id})" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">View</button>
+                <div class="flex gap-2">
+                  <button onclick="navigateTo('post-detail', ${p.id})" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">View</button>
+                  ${isSelf ? `
+                    <button onclick="openEditPostModal(${p.id}, '${safeTitle}', '${safeContent}', '${p.category || 'Awareness'}')" class="px-3 py-1 bg-slate-200 text-slate-800 hover:bg-slate-300 text-xs font-bold rounded-lg">Edit</button>
+                    <button onclick="deletePostConfirm(${p.id})" class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700">Delete</button>
+                  ` : ''}
+                </div>
               </div>
-            `).join('') : '<p class="text-slate-500 text-sm">No recent posts published.</p>'}
+            `;
+            }).join('') : '<p class="text-slate-500 text-sm">No recent posts published.</p>'}
           </div>
         </div>
       </div>
@@ -615,9 +625,10 @@ async function loadMyActivity() {
   container.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium">Loading your activity history...</div>`;
 
   try {
-    const [reports, myEvents] = await Promise.all([
+    const [reports, myEvents, myPosts] = await Promise.all([
       apiFetch(`/api/reports?user_id=${state.user.id}`),
-      apiFetch("/api/events/my-events")
+      apiFetch("/api/events/my-events"),
+      apiFetch(`/api/posts?user_id=${state.user.id}`)
     ]);
 
     container.innerHTML = `
@@ -638,6 +649,33 @@ async function loadMyActivity() {
                 <span class="badge-status status-${r.status.replace(/\s+/g, '')}">${r.status}</span>
               </div>
             `).join('') : '<p class="text-slate-500 text-sm">You haven\'t submitted any waste reports yet.</p>'}
+          </div>
+        </div>
+
+        <!-- My Published Posts -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-600">forum</span> Posts Published By Me
+          </h3>
+          <div class="space-y-3">
+            ${myPosts.length > 0 ? myPosts.map(p => {
+              const safeTitle = encodeURIComponent(p.title || '');
+              const safeContent = encodeURIComponent(p.content || '');
+              return `
+              <div class="p-4 bg-slate-50 border rounded-xl flex justify-between items-center">
+                <div>
+                  <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">${p.category}</span>
+                  <h4 class="font-bold text-slate-800 text-sm mt-1">${p.title || 'Community Post'}</h4>
+                  <p class="text-xs text-slate-500 line-clamp-1 mt-0.5">${p.content}</p>
+                </div>
+                <div class="flex gap-2">
+                  <button onclick="navigateTo('post-detail', ${p.id})" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">View</button>
+                  <button onclick="openEditPostModal(${p.id}, '${safeTitle}', '${safeContent}', '${p.category || 'Awareness'}')" class="px-3 py-1 bg-slate-200 text-slate-800 hover:bg-slate-300 text-xs font-bold rounded-lg">Edit</button>
+                  <button onclick="deletePostConfirm(${p.id})" class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700">Delete</button>
+                </div>
+              </div>
+            `;
+            }).join('') : '<p class="text-slate-500 text-sm">You haven\'t published any community posts yet.</p>'}
           </div>
         </div>
 
@@ -680,6 +718,10 @@ async function loadPostDetail(postId) {
 
   try {
     const post = await apiFetch(`/api/posts/${postId}`);
+    const isOwner = state.user && (state.user.id === post.user_id || state.user.role === 'admin');
+    const safeTitle = encodeURIComponent(post.title || '');
+    const safeContent = encodeURIComponent(post.content || '');
+
     container.innerHTML = `
       <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 max-w-3xl mx-auto">
         <button onclick="navigateTo('feed')" class="text-xs font-bold text-emerald-700 flex items-center gap-1 hover:underline">
@@ -694,7 +736,17 @@ async function loadPostDetail(postId) {
               <p class="text-xs text-slate-500">@${post.username} • ${new Date(post.created_at).toLocaleString()}</p>
             </div>
           </div>
-          <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">${post.category}</span>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">${post.category}</span>
+            ${isOwner ? `
+              <button onclick="openEditPostModal(${post.id}, '${safeTitle}', '${safeContent}', '${post.category}')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center gap-1 border">
+                <span class="material-symbols-outlined text-sm">edit</span> Edit
+              </button>
+              <button onclick="deletePostConfirm(${post.id})" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg text-xs flex items-center gap-1 border border-red-200">
+                <span class="material-symbols-outlined text-sm">delete</span> Delete
+              </button>
+            ` : ''}
+          </div>
         </div>
 
         <div>

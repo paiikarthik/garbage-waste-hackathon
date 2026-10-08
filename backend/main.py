@@ -623,6 +623,7 @@ def get_posts(
     category: Optional[str] = None,
     location: Optional[str] = None,
     search: Optional[str] = None,
+    user_id: Optional[int] = None,
     current_user: Optional[dict] = Depends(get_optional_current_user)
 ):
     conn = get_db()
@@ -636,6 +637,9 @@ def get_posts(
     """
     params = []
     
+    if user_id:
+        query += " AND p.user_id = ?"
+        params.append(user_id)
     if category and category != 'All':
         query += " AND p.category = ?"
         params.append(category)
