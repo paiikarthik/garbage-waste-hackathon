@@ -31,7 +31,8 @@ from backend.ai_service import (
     suggest_waste_description,
     answer_eco_chat,
     calculate_environmental_impact,
-    optimize_cleanup_event
+    optimize_cleanup_event,
+    calculate_neighborhood_cleanliness_index
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -55,6 +56,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security Headers Middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 # Serve uploaded static images
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
@@ -243,7 +254,7 @@ def register(data: RegisterSchema):
     # Award welcome points & badge
     award_points(cursor, user_id, 0, "Registration Welcome Bonus")
     cursor.execute("INSERT OR IGNORE INTO user_badges (user_id, badge_code) VALUES (?, 'eco_beginner')", (user_id,))
-    send_notification(cursor, user_id, "Welcome to EcoTrack! 🌱", "You've earned 10 points and the Eco Beginner badge.", "badge", "#profile")
+    send_notification(cursor, user_id, "Welcome to EcoTrack!", "You've earned 10 points and the Eco Beginner badge.", "badge", "#profile")
     conn.commit()
     conn.close()
     
@@ -470,7 +481,7 @@ def create_waste_report(data: ReportCreateSchema, current_user: dict = Depends(g
     cursor.execute("SELECT COUNT(*) as cnt FROM waste_reports WHERE user_id = ?", (current_user["id"],))
     if cursor.fetchone()["cnt"] == 1:
         cursor.execute("INSERT OR IGNORE INTO user_badges (user_id, badge_code) VALUES (?, 'waste_reporter')", (current_user["id"],))
-        send_notification(cursor, current_user["id"], "Badge Unlocked! ♻️", "You've earned the Waste Reporter badge!", "badge", "#profile")
+        send_notification(cursor, current_user["id"], "Badge Unlocked!", "You've earned the Waste Reporter badge!", "badge", "#profile")
 
     send_notification(cursor, current_user["id"], "Waste Report Submitted", f"Report #{tracking_id} was submitted successfully. Status: Reported.", "report", "#reports")
     
@@ -591,7 +602,7 @@ def update_report_status(report_id: int, data: ReportStatusUpdateSchema, current
     # Bonus points if resolved
     if data.status == "Resolved":
         award_points(cursor, report["user_id"], 15, f"Waste Report Resolved ({report['tracking_id']})")
-        send_notification(cursor, report["user_id"], "Waste Problem Resolved! 🎉", "You earned +15 bonus points for your resolved report!", "points", "#profile")
+        send_notification(cursor, report["user_id"], "Waste Problem Resolved!", "You earned +15 bonus points for your resolved report!", "points", "#profile")
         
     conn.commit()
     conn.close()
@@ -612,7 +623,7 @@ def create_post(data: PostCreateSchema, current_user: dict = Depends(get_current
     
     # Gamification: +5 points for useful awareness post
     award_points(cursor, current_user["id"], 5, "Created Community Post")
-    send_notification(cursor, current_user["id"], "Post Published! 📝", "Your community awareness post is live (+5 points).", "post", "#feed")
+    send_notification(cursor, current_user["id"], "Post Published!", "Your community awareness post is live (+5 points).", "post", "#feed")
     
     conn.commit()
     conn.close()
@@ -770,7 +781,7 @@ def toggle_like_post(post_id: int, current_user: dict = Depends(get_current_user
         
         # Notify Post author if different user
         if post["user_id"] != current_user["id"]:
-            send_notification(cursor, post["user_id"], "New Post Like ❤️", f"{current_user['full_name']} liked your post.", "like", f"#post/{post_id}")
+            send_notification(cursor, post["user_id"], "New Post Like", f"{current_user['full_name']} liked your post.", "like", f"#post/{post_id}")
             
     conn.commit()
     cursor.execute("SELECT likes_count FROM posts WHERE id = ?", (post_id,))
@@ -793,7 +804,7 @@ def add_comment(post_id: int, data: PostCommentSchema, current_user: dict = Depe
     cursor.execute("UPDATE posts SET comments_count = comments_count + 1 WHERE id = ?", (post_id,))
     
     if post["user_id"] != current_user["id"]:
-        send_notification(cursor, post["user_id"], "New Comment 💬", f"{current_user['full_name']} commented on your post.", "comment", f"#post/{post_id}")
+        send_notification(cursor, post["user_id"], "New Comment", f"{current_user['full_name']} commented on your post.", "comment", f"#post/{post_id}")
         
     conn.commit()
     conn.close()
@@ -869,7 +880,7 @@ def create_event(data: EventCreateSchema, current_user: dict = Depends(get_curre
     
     # Unlock Green Warrior badge if organizer
     cursor.execute("INSERT OR IGNORE INTO user_badges (user_id, badge_code) VALUES (?, 'green_warrior')", (current_user["id"],))
-    send_notification(cursor, current_user["id"], "Event Created! 🧹", f"Event '{data.name}' is published (+50 points)! Green Warrior badge granted.", "event", "#events")
+    send_notification(cursor, current_user["id"], "Event Created!", f"Event '{data.name}' is published (+50 points)! Green Warrior badge granted.", "event", "#events")
     
     conn.commit()
     conn.close()
@@ -1018,10 +1029,10 @@ def join_event(event_id: int, current_user: dict = Depends(get_current_user)):
     # Unlock Cleanup Volunteer badge if first event
     cursor.execute("INSERT OR IGNORE INTO user_badges (user_id, badge_code) VALUES (?, 'cleanup_volunteer')", (current_user["id"],))
     
-    send_notification(cursor, current_user["id"], "Event Joined! 🧹", f"You registered for '{event['name']}' (+20 points).", "event", f"#event/{event_id}")
+    send_notification(cursor, current_user["id"], "Event Joined!", f"You registered for '{event['name']}' (+20 points).", "event", f"#event/{event_id}")
     
     if event["organizer_id"] != current_user["id"]:
-        send_notification(cursor, event["organizer_id"], "New Participant! 👋", f"{current_user['full_name']} joined your event '{event['name']}'.", "event", f"#event/{event_id}")
+        send_notification(cursor, event["organizer_id"], "New Participant!", f"{current_user['full_name']} joined your event '{event['name']}'.", "event", f"#event/{event_id}")
 
     conn.commit()
     conn.close()
@@ -1078,7 +1089,7 @@ def submit_event_recap(event_id: int, data: EventRecapSchema, current_user: dict
     cursor.execute("SELECT user_id FROM event_participants WHERE event_id = ?", (event_id,))
     participants = cursor.fetchall()
     for p in participants:
-        send_notification(cursor, p["user_id"], "Event Completed! 🎉", f"Recap uploaded for '{event['name']}': {data.waste_collected_kg} kg of waste collected!", "event", f"#event/{event_id}")
+        send_notification(cursor, p["user_id"], "Event Completed!", f"Recap uploaded for '{event['name']}': {data.waste_collected_kg} kg of waste collected!", "event", f"#event/{event_id}")
 
     conn.commit()
     conn.close()
@@ -1122,7 +1133,7 @@ def mark_participant_attendance(event_id: int, data: AttendanceSchema, current_u
     
     if data.attended:
         award_points(cursor, data.user_id, 20, f"Attended Cleanup Event: {event['name']}")
-        send_notification(cursor, data.user_id, "Attendance Verified! ⭐", f"You were marked present for '{event['name']}' (+20 points)! Certificate now available.", "badge", f"#event-detail/{event_id}")
+        send_notification(cursor, data.user_id, "Attendance Verified!", f"You were marked present for '{event['name']}' (+20 points)! Certificate now available.", "badge", f"#event-detail/{event_id}")
     
     conn.commit()
     conn.close()
@@ -1217,6 +1228,16 @@ def ai_calculate_impact(data: AIImpactSchema):
 def ai_optimize_event(data: AIOptimizeEventSchema):
     """Optimizes cleanup event logistics, volunteer headcount, and safety gear."""
     return optimize_cleanup_event(data.location, data.waste_category, data.estimated_area_sqm)
+
+@app.get("/api/ai/cleanliness-index")
+def get_cleanliness_index():
+    """Computes neighborhood cleanliness index score, grade, hotspots, and green route optimization."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT status, severity, location_address FROM waste_reports")
+    reports = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return calculate_neighborhood_cleanliness_index(reports)
 
 # --- Global Search Route ---
 

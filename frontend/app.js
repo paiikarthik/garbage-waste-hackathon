@@ -218,6 +218,28 @@ async function loadDashboard() {
     document.getElementById("dash-resolved-reports").innerText = reports.filter(r => r.status === 'Resolved').length;
     document.getElementById("dash-upcoming-events").innerText = events.filter(e => e.status === 'Upcoming').length;
     
+    // Fetch AI Neighborhood Cleanliness Index
+    try {
+      const cleanIdx = await apiFetch("/api/ai/cleanliness-index");
+      const gradeEl = document.getElementById("clean-grade");
+      const scoreEl = document.getElementById("clean-score");
+      const labelEl = document.getElementById("clean-status-label");
+      const adviceEl = document.getElementById("green-route-advice");
+      const hotspotsEl = document.getElementById("clean-hotspots");
+
+      if (gradeEl) gradeEl.innerText = cleanIdx.grade;
+      if (scoreEl) scoreEl.innerText = `${cleanIdx.cleanliness_score}%`;
+      if (labelEl) labelEl.innerText = cleanIdx.status_label;
+      if (adviceEl) adviceEl.innerText = cleanIdx.green_route_recommendation;
+      if (hotspotsEl) {
+        hotspotsEl.innerText = cleanIdx.critical_hotspots.length > 0 
+          ? `High Density Dump Zones: ${cleanIdx.critical_hotspots.join(", ")}` 
+          : "No critical waste hotspots detected in neighborhood.";
+      }
+    } catch (e) {
+      console.error("Cleanliness Index error:", e);
+    }
+
     // Render Dashboard Lists
     const reportsList = document.getElementById("dash-recent-reports");
     if (reportsList) {
@@ -238,7 +260,7 @@ async function loadDashboard() {
         <div class="p-3 border border-emerald-100 bg-emerald-50/50 rounded-lg flex justify-between items-center">
           <div>
             <h4 class="font-semibold text-emerald-900 text-sm">${e.name}</h4>
-            <p class="text-xs text-emerald-700">📅 ${e.event_date} | 📍 ${e.location_address}</p>
+            <p class="text-xs text-emerald-700">Date: ${e.event_date} | Location: ${e.location_address}</p>
           </div>
           <button onclick="navigateTo('event-detail', ${e.id})" class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-md">View</button>
         </div>
@@ -381,9 +403,9 @@ async function loadWasteReports() {
 
           <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t text-xs text-slate-500">
             <div class="flex items-center gap-3">
-              <span>📁 ${r.category}</span>
-              <span>⚠️ Severity: <strong>${r.severity}</strong></span>
-              <span>📍 ${r.location_address}</span>
+              <span>Category: <strong>${r.category}</strong></span>
+              <span>Severity: <strong>${r.severity}</strong></span>
+              <span>Location: ${r.location_address}</span>
             </div>
             <span class="cursor-pointer hover:underline text-emerald-700 font-semibold" onclick="navigateTo('profile', ${r.user_id})">Reported by @${r.username}</span>
           </div>
@@ -417,7 +439,7 @@ async function loadEvents() {
         <div class="p-5 space-y-3 flex-1 flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center text-xs text-emerald-700 font-semibold mb-1">
-              <span>📅 ${e.event_date} (${e.start_time} - ${e.end_time})</span>
+              <span>Date: ${e.event_date} (${e.start_time} - ${e.end_time})</span>
               <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">${e.status}</span>
             </div>
             <h3 class="font-bold text-slate-900 text-lg">${e.name}</h3>
@@ -425,8 +447,8 @@ async function loadEvents() {
           </div>
 
           <div class="space-y-2 pt-2 border-t text-xs text-slate-500">
-            <p>📍 ${e.location_address}</p>
-            <p>👥 Participants: <strong>${e.participant_count} / ${e.max_participants}</strong></p>
+            <p>Location: ${e.location_address}</p>
+            <p>Participants: <strong>${e.participant_count} / ${e.max_participants}</strong></p>
             <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
               <div class="bg-emerald-600 h-full" style="width: ${Math.min(100, (e.participant_count / e.max_participants) * 100)}%"></div>
             </div>
@@ -516,7 +538,7 @@ async function loadUserProfile(targetUserId = null) {
             <img src="${profile.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-24 h-24 rounded-full object-cover border-4 border-emerald-500 shadow-md">
             <div class="text-center md:text-left space-y-1">
               <h2 class="text-2xl font-black text-slate-900">${profile.full_name}</h2>
-              <p class="text-sm font-semibold text-slate-500">@${profile.username} • 📍 ${profile.location || 'Mangalore'}</p>
+              <p class="text-sm font-semibold text-slate-500">@${profile.username} • Location: ${profile.location || 'Mangalore'}</p>
               <p class="text-sm text-slate-700 max-w-lg mt-2">${profile.bio || 'Environmental advocate & eco volunteer.'}</p>
             </div>
           </div>
@@ -537,7 +559,7 @@ async function loadUserProfile(targetUserId = null) {
         <!-- Badges Showcase -->
         <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
           <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-            <span>🎖️ Unlocked Eco Badges</span>
+            <span class="material-symbols-outlined text-amber-500">workspace_premium</span> Unlocked Eco Badges
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             ${profile.badges && profile.badges.length > 0 ? profile.badges.map(b => `
@@ -644,7 +666,7 @@ async function loadMyActivity() {
                 <div>
                   <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">${r.tracking_id}</span>
                   <h4 class="font-bold text-slate-800 text-sm mt-1">${r.title}</h4>
-                  <p class="text-xs text-slate-500">📍 ${r.location_address}</p>
+                  <p class="text-xs text-slate-500">Location: ${r.location_address}</p>
                 </div>
                 <span class="badge-status status-${r.status.replace(/\s+/g, '')}">${r.status}</span>
               </div>
@@ -689,7 +711,7 @@ async function loadMyActivity() {
               <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl flex justify-between items-center">
                 <div>
                   <h4 class="font-bold text-slate-900 text-sm">${e.name}</h4>
-                  <p class="text-xs text-emerald-800">📅 ${e.event_date} • 👥 ${e.participant_count} Registered</p>
+                  <p class="text-xs text-emerald-800">Date: ${e.event_date} • Participants: ${e.participant_count} Registered</p>
                 </div>
                 <div class="flex gap-2">
                   <button onclick="navigateTo('event-detail', ${e.id})" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg">View</button>
@@ -843,10 +865,10 @@ async function loadEventDetail(eventId) {
             <p class="text-slate-600 text-sm leading-relaxed">${event.description}</p>
             
             <div class="space-y-1 text-xs text-slate-600 border-t pt-3">
-              <p>📅 Date & Time: <strong>${event.event_date} (${event.start_time} - ${event.end_time})</strong></p>
-              <p>📍 Address: <strong>${event.location_address}</strong></p>
-              <p>📁 Waste Category: <strong>${event.waste_category}</strong></p>
-              <p>🎒 Required Materials: <strong>${event.required_materials || 'None specified'}</strong></p>
+              <p>Date & Time: <strong>${event.event_date} (${event.start_time} - ${event.end_time})</strong></p>
+              <p>Address: <strong>${event.location_address}</strong></p>
+              <p>Waste Category: <strong>${event.waste_category}</strong></p>
+              <p>Required Materials: <strong>${event.required_materials || 'None specified'}</strong></p>
             </div>
 
             <div class="pt-3 flex flex-wrap gap-3">
@@ -1020,7 +1042,7 @@ async function triggerAIWasteClassification(input) {
   formData.append("file", file);
 
   const statusEl = document.getElementById("ai-classify-status");
-  if (statusEl) statusEl.innerHTML = `<span class="text-emerald-700 font-semibold animate-pulse">🤖 AI analyzing waste image...</span>`;
+  if (statusEl) statusEl.innerHTML = `<span class="text-emerald-700 font-semibold animate-pulse">AI analyzing waste image...</span>`;
 
   try {
     const res = await apiFetch("/api/ai/classify-waste", {
@@ -1556,7 +1578,7 @@ async function triggerAIOptimizeEvent() {
   const location = document.getElementById("eventAddress")?.value || "Beach / City Site";
   const wasteCategory = document.getElementById("eventWasteCat")?.value || "Mixed";
   
-  showToast("🤖 AI optimizing cleanup event logistics...", "info");
+  showToast("AI optimizing cleanup event logistics...", "info");
   try {
     const res = await apiFetch("/api/ai/optimize-event", {
       method: "POST",

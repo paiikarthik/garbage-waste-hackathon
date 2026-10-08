@@ -29,11 +29,11 @@ def init_db():
 
     # Seed Badges
     badges = [
-        ('eco_beginner', '🌱 Eco Beginner', '🌱', 'Joined the EcoTrack community and started making a difference', 0),
-        ('waste_reporter', '♻️ Waste Reporter', '♻️', 'Reported waste issues to keep neighborhoods clean', 10),
-        ('cleanup_volunteer', '🧹 Cleanup Volunteer', '🧹', 'Participated in community cleanup drives', 20),
-        ('green_warrior', '🌍 Green Warrior', '🌍', 'Organized cleanup events and actively led community efforts', 50),
-        ('environmental_champion', '🏆 Environmental Champion', '🏆', 'Reached 100+ contribution points for outstanding impact', 100),
+        ('eco_beginner', 'Eco Beginner', 'eco', 'Joined the EcoTrack community and started making a difference', 0),
+        ('waste_reporter', 'Waste Reporter', 'delete_sweep', 'Reported waste issues to keep neighborhoods clean', 10),
+        ('cleanup_volunteer', 'Cleanup Volunteer', 'cleaning_services', 'Participated in community cleanup drives', 20),
+        ('green_warrior', 'Green Warrior', 'public', 'Organized cleanup events and actively led community efforts', 50),
+        ('environmental_champion', 'Environmental Champion', 'military_tech', 'Reached 100+ contribution points for outstanding impact', 100),
     ]
 
     for code, name, icon, desc, pts in badges:

@@ -104,7 +104,7 @@
       </nav>
 
       <div class="pt-4 border-t border-emerald-900/60 text-xs text-emerald-400/80 text-center font-semibold">
-        EcoTrack v2.0 • Clean & Green 🌍
+        EcoTrack v2.0 • Clean & Green Platform
       </div>
     </aside>
 
@@ -132,7 +132,9 @@
         <!-- Metric Stat Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="stat-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div class="stat-icon bg-emerald-100 text-emerald-700 w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold">♻️</div>
+            <div class="stat-icon bg-emerald-100 text-emerald-700 w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold">
+              <span class="material-symbols-outlined text-2xl">delete_sweep</span>
+            </div>
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase">Total Reports</p>
               <h3 id="dash-total-reports" class="text-2xl font-black text-slate-900">0</h3>
@@ -140,7 +142,9 @@
           </div>
 
           <div class="stat-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div class="stat-icon bg-blue-100 text-blue-700 w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold">✅</div>
+            <div class="stat-icon bg-blue-100 text-blue-700 w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold">
+              <span class="material-symbols-outlined text-2xl">task_alt</span>
+            </div>
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase">Resolved Issues</p>
               <h3 id="dash-resolved-reports" class="text-2xl font-black text-slate-900">0</h3>
@@ -148,7 +152,9 @@
           </div>
 
           <div class="stat-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div class="stat-icon bg-purple-100 text-purple-700 w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold">🧹</div>
+            <div class="stat-icon bg-purple-100 text-purple-700 w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold">
+              <span class="material-symbols-outlined text-2xl">cleaning_services</span>
+            </div>
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase">Upcoming Events</p>
               <h3 id="dash-upcoming-events" class="text-2xl font-black text-slate-900">0</h3>
@@ -156,10 +162,53 @@
           </div>
 
           <div class="stat-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div class="stat-icon bg-amber-100 text-amber-700 w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold">🌱</div>
+            <div class="stat-icon bg-amber-100 text-amber-700 w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold">
+              <span class="material-symbols-outlined text-2xl">eco</span>
+            </div>
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase">Community Impact</p>
               <h3 class="text-2xl font-black text-slate-900">240+ kg</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Neighborhood Cleanliness Index & Green Route Optimizer AI Widget -->
+        <div class="bg-gradient-to-br from-slate-900 via-emerald-950 to-teal-900 text-white p-6 rounded-2xl shadow-xl space-y-4 border border-emerald-800/50">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-emerald-800/60 pb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl text-emerald-400">verified</span>
+              </div>
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">AI Environmental Intelligence</span>
+                <h3 class="text-xl font-black">Neighborhood Cleanliness Index</h3>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-right">
+                <span id="clean-grade" class="text-3xl font-black text-amber-400">A+</span>
+                <p id="clean-status-label" class="text-xs text-emerald-200 font-semibold">Pristine & Clean</p>
+              </div>
+              <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex flex-col items-center justify-center">
+                <span id="clean-score" class="text-2xl font-black text-white">95%</span>
+                <span class="text-[9px] uppercase font-bold text-emerald-300">Score</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+            <div class="bg-white/5 p-4 rounded-xl border border-white/10 space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base text-emerald-400">route</span> Green Route Optimizer
+              </h4>
+              <p id="green-route-advice" class="text-xs text-slate-200 leading-relaxed">Calculating safest, cleanest walking and cycling routes...</p>
+            </div>
+
+            <div class="bg-white/5 p-4 rounded-xl border border-white/10 space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base text-amber-400">warning</span> Priority Hotspots
+              </h4>
+              <p id="clean-hotspots" class="text-xs text-slate-200 leading-relaxed">No critical waste hotspots detected.</p>
             </div>
           </div>
         </div>
@@ -339,7 +388,9 @@
       <!-- View: Leaderboard -->
       <section id="view-leaderboard" class="view-panel hidden space-y-6 max-w-4xl mx-auto">
         <div class="text-center space-y-2">
-          <h2 class="text-3xl font-black text-slate-900">🏆 Environmental Champion Leaderboard</h2>
+          <h2 class="text-3xl font-black text-slate-900 flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-amber-500 text-3xl">trophy</span> Environmental Champion Leaderboard
+          </h2>
           <p class="text-slate-500 text-sm">Top community contributors earning points for waste reporting & cleanups.</p>
         </div>
         <div id="leaderboard-list" class="space-y-3"></div>
@@ -626,7 +677,9 @@
         <div class="pt-4 flex justify-between items-end">
           <div class="text-left">
             <span class="text-[10px] text-slate-400 block font-mono">VERIFIED ECO BADGE</span>
-            <span class="inline-block bg-amber-400 text-slate-950 text-xs font-extrabold px-3 py-1 rounded-full border border-amber-500 shadow-sm">🌱 Verified Clean & Green Volunteer</span>
+            <span class="inline-block bg-amber-400 text-slate-950 text-xs font-extrabold px-3 py-1 rounded-full border border-amber-500 shadow-sm flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">eco</span> Verified Clean & Green Volunteer
+            </span>
           </div>
           <div class="text-right">
             <div class="font-serif italic font-bold text-emerald-900 border-b border-slate-400 px-4 py-1">EcoTrack Board</div>
@@ -808,7 +861,7 @@
 
       <div id="ecobot-messages" class="flex-1 p-3 overflow-y-auto space-y-3 text-xs">
         <div class="p-2.5 bg-emerald-50 text-emerald-950 rounded-xl border border-emerald-200">
-          Hello! 🌍 I am EcoBot, your AI Assistant. Ask me anything about recycling rules, composting, reporting waste, or organizing cleanup drives!
+          Hello! I am EcoBot, your AI Assistant. Ask me anything about recycling rules, composting, reporting waste, or organizing cleanup drives!
         </div>
       </div>
 

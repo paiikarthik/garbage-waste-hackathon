@@ -150,28 +150,28 @@ def answer_eco_chat(query: str, history: List[Dict[str, str]] = None) -> Dict[st
     q_lower = query.lower().strip()
     
     if any(k in q_lower for k in ['hi', 'hello', 'hey', 'start']):
-        reply = "Hello! 🌍 I am EcoBot, your EcoTrack AI Assistant. Ask me anything about waste recycling, composting, reporting illegal dumps, or organizing cleanup drives!"
+        reply = "Hello! I am EcoBot, your EcoTrack AI Assistant. Ask me anything about waste recycling, composting, reporting illegal dumps, or organizing cleanup drives!"
         suggestions = ["How do I recycle plastic?", "What is e-waste?", "How to make compost at home?"]
     elif any(k in q_lower for k in ['plastic', 'bottle', 'container']):
-        reply = "♻️ **Plastic Recycling Guide**:\n• Wash & dry plastic containers before binning.\n• Check resin identification codes (#1 PET and #2 HDPE are widely recyclable).\n• Avoid burning plastic—it releases toxic dioxins!"
+        reply = "**Plastic Recycling Guide**:\n• Wash & dry plastic containers before binning.\n• Check resin identification codes (#1 PET and #2 HDPE are widely recyclable).\n• Avoid burning plastic—it releases toxic dioxins!"
         suggestions = ["Where to dispose plastic?", "How does plastic harm ocean life?", "Single-use plastic alternatives"]
     elif any(k in q_lower for k in ['food', 'organic', 'compost', 'kitchen']):
-        reply = "🌱 **Composting Guide**:\n• Mix Green Waste (fruit peels, coffee grounds) with Brown Waste (dry leaves, cardboard).\n• Keep moisture balanced like a damp sponge.\n• Aerate every 5-7 days for rich, odor-free soil compost in 3-4 weeks!"
+        reply = "**Composting Guide**:\n• Mix Green Waste (fruit peels, coffee grounds) with Brown Waste (dry leaves, cardboard).\n• Keep moisture balanced like a damp sponge.\n• Aerate every 5-7 days for rich, odor-free soil compost in 3-4 weeks!"
         suggestions = ["What cannot be composted?", "Food waste prevention tips", "Community composting"]
     elif any(k in q_lower for k in ['e-waste', 'electronic', 'phone', 'battery', 'computer']):
-        reply = "⚡ **E-Waste Management**:\n• Never discard electronics or lithium batteries in household trash—they contain lead, mercury, and cadmium.\n• Deposit at authorized EcoTrack E-Waste drop-off points or certified recyclers."
+        reply = "**E-Waste Management**:\n• Never discard electronics or lithium batteries in household trash—they contain lead, mercury, and cadmium.\n• Deposit at authorized EcoTrack E-Waste drop-off points or certified recyclers."
         suggestions = ["Safe battery disposal", "E-waste collection points", "How is e-waste recycled?"]
     elif any(k in q_lower for k in ['medical', 'syringe', 'needle', 'medicine', 'hazard']):
-        reply = "⚠️ **Hazardous & Medical Waste Safety**:\n• Place sharps/syringes in rigid puncture-proof containers.\n• Return unused medicines to pharmacy takeaway programs or designated biohazard bins."
+        reply = "**Hazardous & Medical Waste Safety**:\n• Place sharps/syringes in rigid puncture-proof containers.\n• Return unused medicines to pharmacy takeaway programs or designated biohazard bins."
         suggestions = ["Biohazard waste rules", "Mask disposal tips", "Chemical waste safety"]
     elif any(k in q_lower for k in ['event', 'cleanup', 'drive', 'organize']):
-        reply = "🧹 **Cleanup Event Strategy**:\n1. Choose an accessible public site with high waste accumulation.\n2. Equip volunteers with heavy-duty gloves, trash bags, & first-aid kits.\n3. Pre-arrange waste pickup with local municipal services or recyclers!"
+        reply = "**Cleanup Event Strategy**:\n1. Choose an accessible public site with high waste accumulation.\n2. Equip volunteers with heavy-duty gloves, trash bags, & first-aid kits.\n3. Pre-arrange waste pickup with local municipal services or recyclers!"
         suggestions = ["How to earn impact points?", "Event recap guidelines", "Safety rules for cleanups"]
     elif any(k in q_lower for k in ['report', 'points', 'leaderboard', 'badge']):
-        reply = "🏆 **EcoTrack Rewards & Badges**:\n• Submit a Waste Report: **+10 pts**\n• Publish an Eco Post: **+5 pts**\n• Organize Cleanup Drive: **+50 pts** (+30 recap bonus!)\n• Unlock 3D metallic badges as you rank up on the Leaderboard!"
+        reply = "**EcoTrack Rewards & Badges**:\n• Submit a Waste Report: **+10 pts**\n• Publish an Eco Post: **+5 pts**\n• Organize Cleanup Drive: **+50 pts** (+30 recap bonus!)\n• Unlock 3D metallic badges as you rank up on the Leaderboard!"
         suggestions = ["How to view my badges?", "Report waste tracking", "Admin review process"]
     else:
-        reply = f"🌱 Thanks for asking about '{query}'! To build a zero-waste community:\n1. Segregate waste at source (Wet, Dry, E-Waste).\n2. Report illegal dump sites via EcoTrack.\n3. Join local cleanup drives to earn impact points!"
+        reply = f"Thanks for asking about '{query}'! To build a zero-waste community:\n1. Segregate waste at source (Wet, Dry, E-Waste).\n2. Report illegal dump sites via EcoTrack.\n3. Join local cleanup drives to earn impact points!"
         suggestions = ["How to recycle plastic?", "Composting tips", "How to organize a cleanup?"]
 
     return {
@@ -208,7 +208,7 @@ def calculate_environmental_impact(waste_kg: float, category: str = "Mixed") -> 
         "trees_equivalent": trees_equivalent,
         "landfill_saved_m3": landfill_saved_m3,
         "energy_saved_kwh": energy_saved_kwh,
-        "summary": f"Collecting {kg} kg of {category} prevents ~{co2_saved} kg of CO₂ emissions, saves {energy_saved_kwh} kWh of energy, and equals planting {trees_equivalent} trees!"
+        "summary": f"Collecting {kg} kg of {category} prevents ~{co2_saved} kg of CO2 emissions, saves {energy_saved_kwh} kWh of energy, and equals planting {trees_equivalent} trees!"
     }
 
 def optimize_cleanup_event(location: str, waste_category: str, estimated_area_sqm: int = 500) -> Dict[str, Any]:
@@ -239,4 +239,73 @@ def optimize_cleanup_event(location: str, waste_category: str, estimated_area_sq
         "safety_instructions": safety_notes,
         "title_suggestion": f"Community {waste_category} Cleanup at {location or 'Local Site'}"
     }
+
+def calculate_neighborhood_cleanliness_index(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    AI Neighborhood Cleanliness Index & Green Route Optimizer:
+    Evaluates real-time waste report density, resolution rate, and severity distribution
+    to produce a neighborhood cleanliness score, safety grade, and optimal green walking routes.
+    """
+    total_reports = len(reports)
+    if total_reports == 0:
+        return {
+            "cleanliness_score": 95.0,
+            "grade": "A+",
+            "status_label": "Pristine",
+            "total_reports": 0,
+            "resolved_reports": 0,
+            "open_reports_count": 0,
+            "resolved_ratio_pct": 100.0,
+            "critical_hotspots": [],
+            "green_route_recommendation": "All major arterial routes clear and waste-free. Safe for walking and outdoor activities.",
+            "insights": "No open waste reports detected in your neighborhood."
+        }
+
+    resolved_count = sum(1 for r in reports if r.get("status") == "Resolved")
+    open_reports = [r for r in reports if r.get("status") != "Resolved"]
+    
+    high_severity_count = sum(1 for r in open_reports if r.get("severity") in ["High", "Critical"])
+    medium_severity_count = sum(1 for r in open_reports if r.get("severity") == "Medium")
+    low_severity_count = sum(1 for r in open_reports if r.get("severity") == "Low")
+
+    penalty = (high_severity_count * 12) + (medium_severity_count * 6) + (low_severity_count * 3)
+    base_score = 100 - min(80, penalty)
+    
+    resolved_ratio = (resolved_count / total_reports) if total_reports > 0 else 1.0
+    final_score = round(max(15.0, min(99.0, base_score + (resolved_ratio * 10))), 1)
+
+    if final_score >= 90:
+        grade = "A+"
+        label = "Pristine & Clean"
+    elif final_score >= 75:
+        grade = "B"
+        label = "Generally Clean"
+    elif final_score >= 60:
+        grade = "C"
+        label = "Moderate Dumping"
+    else:
+        grade = "D"
+        label = "Needs Immediate Action"
+
+    hotspot_locations = list({r.get("location_address", "Local Site") for r in open_reports if r.get("location_address")})[:3]
+
+    route_advice = "Green Route Optimizer: "
+    if hotspot_locations:
+        route_advice += f"Avoid walking near {', '.join(hotspot_locations)}. Prefer green parkways and verified clean zones."
+    else:
+        route_advice += "Main thoroughfares clear. All standard walking and cycling routes recommended."
+
+    return {
+        "cleanliness_score": final_score,
+        "grade": grade,
+        "status_label": label,
+        "total_reports": total_reports,
+        "resolved_reports": resolved_count,
+        "open_reports_count": len(open_reports),
+        "resolved_ratio_pct": round(resolved_ratio * 100, 1),
+        "critical_hotspots": hotspot_locations,
+        "green_route_recommendation": route_advice,
+        "insights": f"{len(open_reports)} active waste issue(s) reported. {high_severity_count} marked high severity."
+    }
+
 

@@ -148,6 +148,12 @@ def test_ai_services():
     assert ai_opt.status_code == 200
     assert ai_opt.json()["recommended_volunteers"] > 0
 
+    # Cleanliness Index & Green Route Optimizer
+    ai_idx = client.get("/api/ai/cleanliness-index")
+    assert ai_idx.status_code == 200
+    assert "cleanliness_score" in ai_idx.json()
+    assert "green_route_recommendation" in ai_idx.json()
+
 def test_admin_authorization():
     # Admin Login
     admin_res = client.post("/api/auth/login", json={
