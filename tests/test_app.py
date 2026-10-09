@@ -46,6 +46,26 @@ def test_user_registration_and_login():
     assert me_res.status_code == 200
     assert me_res.json()["email"] == email
 
+def test_google_authentication():
+    # Test Google Login for existing & new user
+    g_res = client.post("/api/auth/google", json={
+        "email": "karthik.google@ecotrack.org",
+        "full_name": "Karthik Pai Google",
+        "profile_pic": "https://lh3.googleusercontent.com/a/default-user"
+    })
+    assert g_res.status_code == 200
+    data = g_res.json()
+    assert "token" in data
+    assert data["user"]["full_name"] == "Karthik Pai Google"
+
+    # Re-login with Google
+    g_res2 = client.post("/api/auth/google", json={
+        "email": "karthik.google@ecotrack.org",
+        "full_name": "Karthik Pai Google"
+    })
+    assert g_res2.status_code == 200
+    assert "token" in g_res2.json()
+
 def test_waste_report_creation_and_status():
     # Login as demo user
     login_res = client.post("/api/auth/login", json={

@@ -132,19 +132,21 @@ googleButton.addEventListener("click", async () => {
     try {
         let googleEmail = null;
         let googleName = null;
+        let googlePic = null;
 
         try {
             const result = await signInWithPopup(auth, provider);
             if (result && result.user) {
                 googleEmail = result.user.email;
-                googleName = result.user.displayName || googleEmail.split('@')[0];
+                googleName = result.user.displayName;
+                googlePic = result.user.photoURL;
             }
         } catch (firebaseErr) {
             console.warn("Firebase Google Auth notice:", firebaseErr);
             if (firebaseErr.code === "auth/unauthorized-domain" || firebaseErr.code === "auth/operation-not-allowed" || firebaseErr.code === "auth/auth-domain-config-required") {
-                googleEmail = prompt("Note: Firebase Google Sign-In requires adding 'localhost' under Firebase Console > Auth > Authorized Domains.\n\nEnter your Google email to sign in locally:", "user@gmail.com");
+                googleEmail = prompt("Note: Firebase Google Sign-In requires adding 'localhost' under Firebase Console > Auth > Authorized Domains.\n\nEnter your Google email to sign in locally:", "karthik@gmail.com");
                 if (!googleEmail) return;
-                googleName = googleEmail.split('@')[0];
+                googleName = prompt("Enter your full name:", "Karthik Pai");
             } else {
                 alert("Google Sign-In Error: " + firebaseErr.message);
                 return;
@@ -153,49 +155,27 @@ googleButton.addEventListener("click", async () => {
 
         if (!googleEmail) return;
 
-        // Sync with backend API (Register if new, or Login if existing)
-        const username = googleEmail.split('@')[0] + "_g";
-        let token = null;
-
-        try {
-            const regRes = await fetch("/api/auth/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    username: username,
-                    email: googleEmail,
-                    password: "GoogleOAuthSecurePass2026!",
-                    full_name: googleName || "Google Eco User"
-                })
-            });
-            const regData = await regRes.json();
-            if (regRes.ok && regData.token) {
-                token = regData.token;
-            }
-        } catch (e) {
-            console.log("Registration sync note:", e);
+        // Call backend Google Auth API
+        const apiRes = await fetch("/api/auth/google", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: googleEmail,
+                full_name: googleName,
+                profile_pic: googlePic
+            })
+        });
+        const data = await apiRes.json();
+        if (!apiRes.ok) {
+            alert(data.detail || data.message || "Google Login failed.");
+            return;
         }
 
-        if (!token) {
-            const loginRes = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: googleEmail,
-                    password: "GoogleOAuthSecurePass2026!"
-                })
-            });
-            const loginData = await loginRes.json();
-            if (loginRes.ok && loginData.token) {
-                token = loginData.token;
-            }
+        if (data.token) {
+            localStorage.setItem("ecotrack_token", data.token);
         }
 
-        if (token) {
-            localStorage.setItem("ecotrack_token", token);
-        }
-
-        alert("Google Login successful!");
+        alert("Welcome, " + (data.user ? data.user.full_name : "EcoTrack User") + "!");
         window.location.href = "index.html";
     } catch (error) {
         console.error("Google sign-in failure:", error);

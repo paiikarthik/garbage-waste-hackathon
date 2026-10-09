@@ -111,6 +111,11 @@ class LoginSchema(BaseModel):
     email: str
     password: str
 
+class GoogleAuthSchema(BaseModel):
+    email: str
+    full_name: Optional[str] = None
+    profile_pic: Optional[str] = None
+
 class ForgotPasswordSchema(BaseModel):
     email: str
 
@@ -295,6 +300,70 @@ def login(data: LoginSchema):
         "message": "Login successful!",
         "token": token,
         "user": dict(user)
+    }
+
+@app.post("/api/auth/google")
+def google_auth(data: GoogleAuthSchema):
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Check if user already exists
+    cursor.execute("SELECT id, username, email, full_name, role, points, is_blocked, profile_pic FROM users WHERE email = ?", (data.email,))
+    user = cursor.fetchone()
+    
+    if user:
+        if user["is_blocked"]:
+            conn.close()
+            raise HTTPException(status_code=403, detail="Your account has been suspended by an administrator.")
+            
+        user_id = user["id"]
+        username = user["username"]
+        role = user["role"]
+        
+        # Update full_name if empty or default
+        updates = []
+        params = []
+        if data.full_name and (not user["full_name"] or user["full_name"] == "Google Eco User" or user["full_name"].startswith("user_")):
+            updates.append("full_name = ?")
+            params.append(data.full_name)
+        if data.profile_pic and not user["profile_pic"]:
+            updates.append("profile_pic = ?")
+            params.append(data.profile_pic)
+            
+        if updates:
+            params.append(user_id)
+            cursor.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = ?", params)
+            conn.commit()
+    else:
+        # Register new Google User
+        clean_name = data.full_name or data.email.split('@')[0].title()
+        username = data.email.split('@')[0] + "_g"
+        hashed = hash_password(f"GoogleAuth_{uuid.uuid4().hex}")
+        
+        cursor.execute("""
+            INSERT INTO users (username, email, password_hash, full_name, profile_pic, points)
+            VALUES (?, ?, ?, ?, ?, 10)
+        """, (username, data.email, hashed, clean_name, data.profile_pic))
+        conn.commit()
+        user_id = cursor.lastrowid
+        role = "user"
+        
+        award_points(cursor, user_id, 0, "Registration Welcome Bonus")
+        cursor.execute("INSERT OR IGNORE INTO user_badges (user_id, badge_code) VALUES (?, 'eco_beginner')", (user_id,))
+        send_notification(cursor, user_id, "Welcome to EcoTrack!", "You've earned 10 points and the Eco Beginner badge.", "badge", "#profile")
+        conn.commit()
+
+    # Retrieve full user profile object
+    cursor.execute("SELECT id, username, email, full_name, profile_pic, role, points FROM users WHERE id = ?", (user_id,))
+    updated_user = dict(cursor.fetchone())
+    conn.close()
+    
+    token = create_access_token(user_id, role, username)
+    return {
+        "status": "success",
+        "message": "Google Authentication successful!",
+        "token": token,
+        "user": updated_user
     }
 
 @app.post("/api/auth/forgot-password")

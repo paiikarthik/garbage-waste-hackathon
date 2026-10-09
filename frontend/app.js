@@ -102,20 +102,24 @@ function updateUIAuth() {
   const adminNav = document.getElementById("admin-nav-item");
   const notifBtn = document.getElementById("notif-btn");
   const notifBadge = document.getElementById("notif-badge");
+  const dashHeading = document.getElementById("dash-welcome-heading");
 
   if (state.user) {
     if (authNav) {
       authNav.innerHTML = `
         <div class="relative group flex items-center gap-3">
-          <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('profile')">
-            <img src="${state.user.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-9 h-9 rounded-full border-2 border-emerald-500 object-cover">
-            <span class="font-semibold text-slate-800 hidden md:inline">${state.user.full_name}</span>
+          <div class="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-emerald-50 px-3 py-1.5 rounded-full border border-slate-200" onclick="navigateTo('profile')">
+            <img src="${state.user.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-8 h-8 rounded-full border-2 border-emerald-500 object-cover">
+            <span class="font-bold text-slate-800 text-xs sm:text-sm">${state.user.full_name}</span>
           </div>
           <button onclick="logoutUser()" class="p-2 text-slate-500 hover:text-red-600 rounded-full hover:bg-slate-100" title="Logout">
             <span class="material-symbols-outlined">logout</span>
           </button>
         </div>
       `;
+    }
+    if (dashHeading) {
+      dashHeading.innerText = `Welcome, ${state.user.full_name}!`;
     }
     if (adminNav) {
       adminNav.style.display = state.user.role === 'admin' ? 'flex' : 'none';
@@ -137,6 +141,9 @@ function updateUIAuth() {
           <a href="signup.html" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 shadow-sm">Sign Up</a>
         </div>
       `;
+    }
+    if (dashHeading) {
+      dashHeading.innerText = "Clean Neighborhoods Start With Us";
     }
     if (adminNav) adminNav.style.display = 'none';
     if (notifBtn) notifBtn.style.display = 'none';
