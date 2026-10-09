@@ -47,7 +47,16 @@ def test_user_registration_and_login():
     assert me_res.json()["email"] == email
 
 def test_google_authentication():
-    # Test Google Login for existing & new user
+    # Test Google Login disallowed when account not yet created
+    g_res_disallowed = client.post("/api/auth/google", json={
+        "email": "unregistered.user@gmail.com",
+        "full_name": "Unregistered User",
+        "allow_create": False
+    })
+    assert g_res_disallowed.status_code == 404
+    assert "Please create an account" in g_res_disallowed.json()["detail"]
+
+    # Test Google Sign-Up for new user (allow_create=True)
     g_res = client.post("/api/auth/google", json={
         "email": "karthik.google@ecotrack.org",
         "full_name": "Karthik Pai Google",
@@ -58,10 +67,11 @@ def test_google_authentication():
     assert "token" in data
     assert data["user"]["full_name"] == "Karthik Pai Google"
 
-    # Re-login with Google
+    # Re-login with Google from login page (allow_create=False for existing user)
     g_res2 = client.post("/api/auth/google", json={
         "email": "karthik.google@ecotrack.org",
-        "full_name": "Karthik Pai Google"
+        "full_name": "Karthik Pai Google",
+        "allow_create": False
     })
     assert g_res2.status_code == 200
     assert "token" in g_res2.json()
@@ -207,12 +217,7 @@ def test_post_edit_delete_and_certificate():
     del_res = client.delete(f"/api/posts/{post_id}", headers={"Authorization": f"Bearer {token}"})
     assert del_res.status_code == 200
 
-    # Certificate test on seeded event 1
-    cert_res = client.get(f"/api/events/1/certificate/{user_id}")
-    assert cert_res.status_code == 200
-    assert "certificate_id" in cert_res.json()
-
-    # Event Creation & Deletion
+    # Event Creation, Certificate Generation & Deletion
     evt_res = client.post("/api/events", json={
         "name": "Temporary Event To Delete",
         "description": "Short description",
@@ -223,6 +228,11 @@ def test_post_edit_delete_and_certificate():
     }, headers={"Authorization": f"Bearer {token}"})
     assert evt_res.status_code == 200
     evt_id = evt_res.json()["event_id"]
+
+    # Certificate test on created event
+    cert_res = client.get(f"/api/events/{evt_id}/certificate/{user_id}")
+    assert cert_res.status_code == 200
+    assert "certificate_id" in cert_res.json()
 
     del_evt = client.delete(f"/api/events/{evt_id}", headers={"Authorization": f"Bearer {token}"})
     assert del_evt.status_code == 200

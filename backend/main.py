@@ -115,6 +115,7 @@ class GoogleAuthSchema(BaseModel):
     email: str
     full_name: Optional[str] = None
     profile_pic: Optional[str] = None
+    allow_create: Optional[bool] = True
 
 class ForgotPasswordSchema(BaseModel):
     email: str
@@ -335,6 +336,10 @@ def google_auth(data: GoogleAuthSchema):
             cursor.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = ?", params)
             conn.commit()
     else:
+        if not data.allow_create:
+            conn.close()
+            raise HTTPException(status_code=404, detail="No account found with this Google email. Please create an account on the Sign Up page first.")
+
         # Register new Google User
         clean_name = data.full_name or data.email.split('@')[0].title()
         username = data.email.split('@')[0] + "_g"

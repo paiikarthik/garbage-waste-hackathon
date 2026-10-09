@@ -155,14 +155,15 @@ googleButton.addEventListener("click", async () => {
 
         if (!googleEmail) return;
 
-        // Call backend Google Auth API
+        // Call backend Google Auth API (allow_create: false disallows registration from login page)
         const apiRes = await fetch("/api/auth/google", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 email: googleEmail,
                 full_name: googleName,
-                profile_pic: googlePic
+                profile_pic: googlePic,
+                allow_create: false
             })
         });
         const data = await apiRes.json();
