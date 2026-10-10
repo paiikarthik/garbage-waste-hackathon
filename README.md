@@ -72,28 +72,6 @@
 
 ---
 
-##  Project Structure
-
-```
-garbage-waste-hackathon/
-├── backend/
-│   ├── main.py            # FastAPI Application & REST API Endpoints
-│   ├── auth.py            # JWT Auth & Security Middleware
-│   ├── db.py              # SQLite Database Handler & Seeder
-│   └── ai_service.py      # AI Waste Classifier & NLP Helper
-├── database/
-│   └── schema.sql         # Relational Database Schema DDL (12 Tables)
-├── frontend/
-│   └── app.js             # SPA Client Logic, Maps, API Client & State
-├── tests/
-│   └── test_app.py        # Automated Pytest Suite
-├── uploads/               # User Image File Storage
-├── index.html             # Master SPA HTML Layout & Modals
-├── style.css              # Custom Environmental UI Styling
-└── README.md              # Documentation
-```
-
----
 
 ##  Installation & Execution Guide
 
@@ -117,15 +95,5 @@ The server will initialize the SQLite database `ecotrack.db`, seed sample data &
 - **Demo Citizen User**:
   - Email: `karthik@ecotrack.org`
   - Password: `user123`
-
----
-
-## Running Automated Tests
-
-To execute the Pytest test suite:
-
-```powershell
-python -m pytest tests/test_app.py -v
-```
 
 ---
