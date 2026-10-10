@@ -75,6 +75,7 @@ async function apiFetch(endpoint, options = {}) {
 // User Authentication Engine
 async function checkAuth() {
   if (!state.token) {
+    state.user = null;
     updateUIAuth();
     return;
   }
@@ -84,16 +85,19 @@ async function checkAuth() {
     updateUIAuth();
   } catch (err) {
     console.error("Auth check failed:", err.message);
-    logoutUser();
+    logoutUser(false);
   }
 }
 
-function logoutUser() {
+function logoutUser(showToastMsg = true) {
   localStorage.removeItem("ecotrack_token");
+  sessionStorage.removeItem("ecotrack_logged_out");
   state.token = null;
   state.user = null;
   updateUIAuth();
-  showToast("Logged out successfully.", "info");
+  if (showToastMsg) {
+    showToast("Logged out successfully.", "info");
+  }
   navigateTo("dashboard");
 }
 
@@ -103,23 +107,34 @@ function updateUIAuth() {
   const notifBtn = document.getElementById("notif-btn");
   const notifBadge = document.getElementById("notif-badge");
   const dashHeading = document.getElementById("dash-welcome-heading");
+  const sidebarUserCard = document.getElementById("sidebar-user-card");
+  const sidebarUserName = document.getElementById("sidebar-user-name");
+  const sidebarUserAvatar = document.getElementById("sidebar-user-avatar");
+  const sidebarUserRole = document.getElementById("sidebar-user-role");
 
   if (state.user) {
     if (authNav) {
       authNav.innerHTML = `
         <div class="relative group flex items-center gap-3">
-          <div class="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-emerald-50 px-3 py-1.5 rounded-full border border-slate-200" onclick="navigateTo('profile')">
-            <img src="${state.user.profile_pic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="w-8 h-8 rounded-full border-2 border-emerald-500 object-cover">
+          <div class="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-emerald-50 px-3 py-1.5 rounded-full border border-slate-200 transition-colors shadow-sm" onclick="navigateTo('profile')" title="View profile for ${state.user.full_name}">
+            <img src="${state.user.profile_pic || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'}" class="w-8 h-8 rounded-full border-2 border-emerald-500 object-cover shadow-sm">
             <span class="font-bold text-slate-800 text-xs sm:text-sm">${state.user.full_name}</span>
+            <span class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold hidden md:inline">${state.user.points || 0} pts</span>
           </div>
-          <button onclick="logoutUser()" class="p-2 text-slate-500 hover:text-red-600 rounded-full hover:bg-slate-100" title="Logout">
-            <span class="material-symbols-outlined">logout</span>
+          <button onclick="logoutUser()" class="p-2 text-slate-500 hover:text-red-600 rounded-full hover:bg-slate-100 transition-colors" title="Logout">
+            <span class="material-symbols-outlined text-lg">logout</span>
           </button>
         </div>
       `;
     }
     if (dashHeading) {
       dashHeading.innerText = `Welcome, ${state.user.full_name}!`;
+    }
+    if (sidebarUserCard) {
+      sidebarUserCard.style.display = "flex";
+      if (sidebarUserName) sidebarUserName.innerText = state.user.full_name;
+      if (sidebarUserAvatar) sidebarUserAvatar.src = state.user.profile_pic || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150';
+      if (sidebarUserRole) sidebarUserRole.innerText = `${state.user.role === 'admin' ? 'Administrator' : 'Active Citizen'} • ${state.user.points || 0} pts`;
     }
     if (adminNav) {
       adminNav.style.display = state.user.role === 'admin' ? 'flex' : 'none';
@@ -144,6 +159,9 @@ function updateUIAuth() {
     }
     if (dashHeading) {
       dashHeading.innerText = "Clean Neighborhoods Start With Us";
+    }
+    if (sidebarUserCard) {
+      sidebarUserCard.style.display = "none";
     }
     if (adminNav) adminNav.style.display = 'none';
     if (notifBtn) notifBtn.style.display = 'none';

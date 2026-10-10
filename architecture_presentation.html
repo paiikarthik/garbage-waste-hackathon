@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoTrack - System Design & Architecture Presentation</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- Mermaid.js for architectural diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0b130e;
+      color: #e2e8f0;
+      overflow: hidden;
+    }
+    .code-font {
+      font-family: 'Fira Code', monospace;
+    }
+    .slide {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.35s ease-in-out;
+      height: calc(100vh - 120px);
+    }
+    .slide.active {
+      display: flex;
+      opacity: 1;
+    }
+    .mermaid svg {
+      max-height: 480px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen select-none">
+
+  <!-- Top Navigation Header -->
+  <header class="h-14 border-b border-emerald-950/80 bg-slate-950/80 px-6 flex items-center justify-between z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-md">
+        <span class="material-symbols-outlined text-xl">nest_eco_leaf</span>
+      </div>
+      <div>
+        <h1 class="text-sm font-black text-white tracking-wide">EcoTrack <span class="text-emerald-400 font-normal">| System Design & Architecture</span></h1>
+        <p class="text-[10px] text-slate-400 font-mono">Full-Stack Technical Deep Dive</p>
+      </div>
+    </div>
+
+    <!-- Slide Indicators -->
+    <div class="flex items-center gap-2">
+      <div id="slide-indicators" class="flex gap-1.5"></div>
+      <span id="slide-counter" class="text-xs font-mono font-bold text-emerald-400 ml-3">1 / 7</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex items-center gap-2">
+      <button onclick="toggleAudio()" id="audio-btn" class="px-3 py-1 bg-emerald-800/80 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Play Narrated Audio for Current Slide">
+        <span class="material-symbols-outlined text-sm" id="audio-icon">volume_up</span>
+        <span id="audio-label">Play Voiceover</span>
+      </button>
+      <button onclick="toggleNotes()" id="notes-btn" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+        <span class="material-symbols-outlined text-sm">record_voice_over</span>
+        <span>Speaker Script</span>
+      </button>
+      <button onclick="toggleFullscreen()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition" title="Toggle Fullscreen">
+        <span class="material-symbols-outlined text-sm">fullscreen</span>
+      </button>
+      <a href="/index.html" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1">
+        <span>Launch App</span>
+        <span class="material-symbols-outlined text-xs">open_in_new</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Slide Stage -->
+  <main class="flex-1 relative overflow-y-auto px-6 py-6 flex items-center justify-center">
+
+    <!-- SLIDE 1: Title & Architectural Vision -->
+    <div class="slide active flex-col items-center justify-center text-center max-w-4xl mx-auto space-y-6" data-slide="1">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-widest">
+        Technical Architecture & System Design
+      </div>
+      <h2 class="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+        Architecting <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">EcoTrack</span>
+      </h2>
+      <p class="text-lg text-slate-300 max-w-2xl leading-relaxed">
+        A resilient, full-stack smart waste platform engineering real-time geospatial reporting, edge computer vision heuristics, civic gamification, and municipal moderation.
+      </p>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full pt-4">
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-emerald-900/40 text-left">
+          <p class="text-xs text-slate-400 uppercase font-bold">Client Tier</p>
+          <h4 class="text-base font-bold text-white mt-1">Lightweight SPA</h4>
+          <p class="text-xs text-emerald-400 font-mono mt-0.5">&lt; 75 KB Zero-Build</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-emerald-900/40 text-left">
+          <p class="text-xs text-slate-400 uppercase font-bold">API Gateway</p>
+          <h4 class="text-base font-bold text-white mt-1">Python 3.13 FastAPI</h4>
+          <p class="text-xs text-emerald-400 font-mono mt-0.5">Asynchronous ASGI</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-emerald-900/40 text-left">
+          <p class="text-xs text-slate-400 uppercase font-bold">AI Subsystem</p>
+          <h4 class="text-base font-bold text-white mt-1">Pillow CV & Spatial</h4>
+          <p class="text-xs text-emerald-400 font-mono mt-0.5">Zero Cloud Cost</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-emerald-900/40 text-left">
+          <p class="text-xs text-slate-400 uppercase font-bold">Persistence</p>
+          <h4 class="text-base font-bold text-white mt-1">Normalized Relational</h4>
+          <p class="text-xs text-emerald-400 font-mono mt-0.5">12 SQLite Tables</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: 4-Tier High-Level Architecture -->
+    <div class="slide flex-col max-w-5xl mx-auto space-y-4 w-full" data-slide="2">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div>
+          <span class="text-xs font-mono text-emerald-400 font-bold uppercase">System Topology</span>
+          <h3 class="text-2xl font-black text-white">4-Tier System Architecture Diagram</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleSlide2View('diagram')" id="btn-s2-diag" class="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold transition shadow">
+            Architecture Diagram
+          </button>
+          <button onclick="toggleSlide2View('grid')" id="btn-s2-grid" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition">
+            Tier Breakdown Grid
+          </button>
+        </div>
+      </div>
+
+      <!-- View A: Visual Mermaid Architecture Flowchart Diagram -->
+      <div id="slide2-diagram-view" class="p-4 bg-slate-950/80 border border-emerald-900/40 rounded-xl overflow-x-auto flex justify-center items-center">
+        <pre class="mermaid text-center">
+flowchart TD
+    subgraph Client["1. Client Tier (Browser)"]
+        SPA["Vanilla ES6 SPA (app.js)"]
+        Map["Leaflet.js + OpenStreetMap"]
+        UI["Tailwind CSS UI"]
+    end
+
+    subgraph API["2. API Gateway (FastAPI)"]
+        Router["REST Router & Schemas"]
+        Sec["Security Middleware & CORS"]
+        Auth["JWT HS256 & SHA-256 Auth"]
+    end
+
+    subgraph AI["3. AI & Spatial Heuristics"]
+        CV["Pillow CV Classifier (Luminance/Variance)"]
+        NCI["Neighborhood Cleanliness Index (A+ to D)"]
+        EcoBot["Conversational EcoBot"]
+    end
+
+    subgraph DB["4. Persistence & File Store"]
+        SQLite[(SQLite ecotrack.db - 12 Tables)]
+        Files["Sanitized Uploads (/uploads/)"]
+    end
+
+    SPA --> Router
+    Router --> Sec
+    Sec --> Auth
+    Router --> AI
+    Router --> DB
+    AI --> SQLite
+    Auth --> SQLite
+        </pre>
+      </div>
+
+      <!-- View B: 4 Cards Grid Breakdown -->
+      <div id="slide2-grid-view" class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2 hidden">
+        <!-- Tier 1 -->
+        <div class="p-4 bg-slate-900/70 border border-emerald-800/40 rounded-xl space-y-3">
+          <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+            <span class="material-symbols-outlined text-lg">devices</span> Tier 1: Client SPA
+          </div>
+          <ul class="text-xs text-slate-300 space-y-2 leading-relaxed">
+            <li>• <strong>Vanilla ES6 Engine:</strong> Zero bundler overhead. Sub-100ms cold boot.</li>
+            <li>• <strong>Leaflet JS + OpenStreetMap:</strong> Geospatial map plotting without API keys.</li>
+            <li>• <strong>Reactive State Store:</strong> Centralized auth, notifications, markers.</li>
+          </ul>
+        </div>
+
+        <!-- Tier 2 -->
+        <div class="p-4 bg-slate-900/70 border border-teal-800/40 rounded-xl space-y-3">
+          <div class="flex items-center gap-2 text-teal-400 font-bold text-sm">
+            <span class="material-symbols-outlined text-lg">router</span> Tier 2: API Gateway
+          </div>
+          <ul class="text-xs text-slate-300 space-y-2 leading-relaxed">
+            <li>• <strong>FastAPI + Uvicorn:</strong> Async high-throughput REST endpoints.</li>
+            <li>• <strong>Pydantic Validation:</strong> Strict runtime type & payload contracts.</li>
+            <li>• <strong>Security Middleware:</strong> Strict CORS, X-Frame, XSS headers.</li>
+          </ul>
+        </div>
+
+        <!-- Tier 3 -->
+        <div class="p-4 bg-slate-900/70 border border-purple-800/40 rounded-xl space-y-3">
+          <div class="flex items-center gap-2 text-purple-400 font-bold text-sm">
+            <span class="material-symbols-outlined text-lg">psychology</span> Tier 3: AI Engine
+          </div>
+          <ul class="text-xs text-slate-300 space-y-2 leading-relaxed">
+            <li>• <strong>Pillow Computer Vision:</strong> Luminance, color variance, texture analysis.</li>
+            <li>• <strong>Cleanliness Index:</strong> Real-time heuristic scoring (Grade A+ to D).</li>
+            <li>• <strong>EcoBot NLP:</strong> Contextual waste advice without paid tokens.</li>
+          </ul>
+        </div>
+
+        <!-- Tier 4 -->
+        <div class="p-4 bg-slate-900/70 border border-amber-800/40 rounded-xl space-y-3">
+          <div class="flex items-center gap-2 text-amber-400 font-bold text-sm">
+            <span class="material-symbols-outlined text-lg">database</span> Tier 4: Persistence
+          </div>
+          <ul class="text-xs text-slate-300 space-y-2 leading-relaxed">
+            <li>• <strong>SQLite (ecotrack.db):</strong> 12 normalized relational tables.</li>
+            <li>• <strong>Foreign Keys:</strong> Strict ON DELETE CASCADE constraints.</li>
+            <li>• <strong>File Store:</strong> UUID4 sanitized media storage in /uploads/.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="p-3 bg-emerald-950/40 border border-emerald-800/40 rounded-xl flex items-center justify-between text-xs text-emerald-200">
+        <span><strong>Communication Protocol:</strong> JSON over HTTP/2 REST with stateless Bearer JWT headers.</span>
+        <span class="font-mono">Latency SLA: &lt; 85ms</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: AI Subsystem & Heuristics -->
+    <div class="slide flex-col max-w-5xl mx-auto space-y-4 w-full" data-slide="3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div>
+          <span class="text-xs font-mono text-emerald-400 font-bold uppercase">Algorithmic Design</span>
+          <h3 class="text-2xl font-black text-white">AI Vision & Spatial Intelligence Engine</h3>
+        </div>
+        <span class="text-xs bg-emerald-900/40 text-emerald-300 border border-emerald-800/50 px-2.5 py-0.5 rounded font-mono">Pillow CV & Spatial Math</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+        <!-- CV Classifier -->
+        <div class="p-5 bg-slate-900/70 border border-emerald-900/40 rounded-xl space-y-3">
+          <h4 class="font-bold text-emerald-400 text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined">visibility</span> Computer Vision Feature Extraction
+          </h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Uploaded images are resized to 150x150 RGB matrices. Mathematical statistical extractors derive:
+          </p>
+          <div class="p-3 bg-slate-950 rounded-lg font-mono text-[11px] text-emerald-300 space-y-1">
+            <p>Brightness = (R + G + B) / 3</p>
+            <p>Color_Variance = |R-G| + |G-B| + |R-B|</p>
+            <p>Texture_Variance = (std_R + std_G + std_B) / 3</p>
+          </div>
+          <p class="text-xs text-slate-400">
+            Rules classify into <strong>Plastic, Food, E-Waste, Medical, Construction, Sewage</strong> with calculated confidence % and user override flexibility.
+          </p>
+        </div>
+
+        <!-- Cleanliness Index -->
+        <div class="p-5 bg-slate-900/70 border border-emerald-900/40 rounded-xl space-y-3">
+          <h4 class="font-bold text-emerald-400 text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined">analytics</span> Neighborhood Cleanliness Index Algorithm
+          </h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Real-time geospatial health score calculated from open reports weighted by severity:
+          </p>
+          <div class="p-3 bg-slate-950 rounded-lg font-mono text-[11px] text-teal-300 space-y-1">
+            <p>Penalty = (12 * High/Crit) + (6 * Med) + (3 * Low)</p>
+            <p>Score = Max(15, Min(99, (100 - Penalty) + 10 * ResolutionRatio))</p>
+            <p>Grade = A+ (&ge;90) | B (&ge;75) | C (&ge;60) | D (&lt;60)</p>
+          </div>
+          <p class="text-xs text-slate-400">
+            <strong>Green Route Optimizer:</strong> Evaluates active hotspot clusters and routes walking/cycling paths through clear parkways.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 pt-1">
+        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-lg text-xs">
+          <strong class="text-white">EcoBot NLP:</strong> Pattern-matching conversational engine for recycling & compost guides.
+        </div>
+        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-lg text-xs">
+          <strong class="text-white">Logistics Optimizer:</strong> Spatial volunteer headcount calculator ($Area / 35m^2$).
+        </div>
+        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-lg text-xs">
+          <strong class="text-white">Impact Multiplier:</strong> Carbon footprint estimator ($2.5 \times CO_2$ kg saved per kg plastic).
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: End-to-End Data Pipeline -->
+    <div class="slide flex-col max-w-5xl mx-auto space-y-4 w-full" data-slide="4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div>
+          <span class="text-xs font-mono text-emerald-400 font-bold uppercase">Transaction Lifecycle</span>
+          <h3 class="text-2xl font-black text-white">Waste Report & Gamification Sequence</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleSlide4View('diagram')" id="btn-s4-diag" class="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold transition shadow">
+            Sequence Diagram
+          </button>
+          <button onclick="toggleSlide4View('steps')" id="btn-s4-steps" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition">
+            Step Breakdown Cards
+          </button>
+        </div>
+      </div>
+
+      <!-- View A: Visual Mermaid Sequence Diagram -->
+      <div id="slide4-diagram-view" class="p-4 bg-slate-950/80 border border-emerald-900/40 rounded-xl overflow-x-auto flex justify-center items-center">
+        <pre class="mermaid text-center">
+sequenceDiagram
+    autonumber
+    actor Citizen as Citizen User
+    participant Frontend as Frontend (app.js)
+    participant API as FastAPI Gateway
+    participant AI as AI Waste Classifier
+    participant DB as SQLite DB
+
+    Citizen->>Frontend: Snaps photo of waste dump
+    Frontend->>API: POST /api/upload (Multipart)
+    API-->>Frontend: Return UUID image URL
+    Frontend->>API: POST /api/ai/classify-waste
+    API->>AI: ImageStat luminance & variance
+    AI-->>Frontend: Category suggestion (e.g. Plastic, 91%)
+    Citizen->>Frontend: Confirm location & submit
+    Frontend->>API: POST /api/reports (Bearer JWT)
+    API->>DB: INSERT into waste_reports
+    API->>DB: UPDATE users SET points = points + 10
+    API->>DB: Check milestone & INSERT user_badges
+    API-->>Frontend: Return tracking_id (REP-89412)
+    Frontend-->>Citizen: Plot Leaflet map pin & show toast
+        </pre>
+      </div>
+
+      <!-- View B: 5 Step Cards Breakdown -->
+      <div id="slide4-steps-view" class="grid grid-cols-1 md:grid-cols-5 gap-3 pt-3 hidden">
+        <div class="p-4 bg-slate-900/80 border border-emerald-900/50 rounded-xl space-y-2">
+          <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-mono text-xs flex items-center justify-center font-bold">1</span>
+          <h5 class="font-bold text-white text-sm">Media Ingestion</h5>
+          <p class="text-xs text-slate-300">File uploaded via multipart/form-data. Validated MIME, assigned UUID4 filename, written to /uploads/.</p>
+        </div>
+
+        <div class="p-4 bg-slate-900/80 border border-emerald-900/50 rounded-xl space-y-2">
+          <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-mono text-xs flex items-center justify-center font-bold">2</span>
+          <h5 class="font-bold text-white text-sm">CV Analysis</h5>
+          <p class="text-xs text-slate-300">In-memory ImageStat color analysis classifies category and confidence score. Description auto-suggested.</p>
+        </div>
+
+        <div class="p-4 bg-slate-900/80 border border-emerald-900/50 rounded-xl space-y-2">
+          <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-mono text-xs flex items-center justify-center font-bold">3</span>
+          <h5 class="font-bold text-white text-sm">Auth & Persistence</h5>
+          <p class="text-xs text-slate-300">FastAPI validates JWT Bearer. Writes to waste_reports table with unique REP-XXXX tracking ID and GPS coordinates.</p>
+        </div>
+
+        <div class="p-4 bg-slate-900/80 border border-emerald-900/50 rounded-xl space-y-2">
+          <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-mono text-xs flex items-center justify-center font-bold">4</span>
+          <h5 class="font-bold text-white text-sm">Gamification Audit</h5>
+          <p class="text-xs text-slate-300">Transaction increments user points (+10). Logs reason to points_log table. Checks milestone badges.</p>
+        </div>
+
+        <div class="p-4 bg-slate-900/80 border border-emerald-900/50 rounded-xl space-y-2">
+          <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-mono text-xs flex items-center justify-center font-bold">5</span>
+          <h5 class="font-bold text-white text-sm">Live Dispatch</h5>
+          <p class="text-xs text-slate-300">Generates real-time in-app notification. Plots custom marker on Leaflet map. Recalculates Cleanliness Index.</p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-xl flex items-center gap-4 text-xs">
+        <span class="material-symbols-outlined text-emerald-400 text-xl">verified_user</span>
+        <span><strong>Audit Trail Integrity:</strong> All user actions (reports, cleanups, recaps) maintain immutable records in <code class="font-mono text-emerald-300">points_log</code> preventing duplicate point exploits.</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Relational Data Schema -->
+    <div class="slide flex-col max-w-5xl mx-auto space-y-4 w-full" data-slide="5">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div>
+          <span class="text-xs font-mono text-emerald-400 font-bold uppercase">Data Model</span>
+          <h3 class="text-2xl font-black text-white">Relational Entity-Relationship Architecture</h3>
+        </div>
+        <span class="text-xs bg-slate-800 px-3 py-1 rounded text-slate-300 font-mono">12 Normalized Tables</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs pt-2">
+        <div class="p-3 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <h5 class="font-bold text-emerald-400">users</h5>
+          <p class="text-[11px] text-slate-400 mt-1">id, username, email, password_hash, points, role, is_blocked, location</p>
+        </div>
+        <div class="p-3 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <h5 class="font-bold text-emerald-400">waste_reports</h5>
+          <p class="text-[11px] text-slate-400 mt-1">id, tracking_id, user_id, title, category, severity, status, lat, lng</p>
+        </div>
+        <div class="p-3 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <h5 class="font-bold text-emerald-400">events</h5>
+          <p class="text-[11px] text-slate-400 mt-1">id, organizer_id, name, event_date, max_participants, waste_kg, status</p>
+        </div>
+        <div class="p-3 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <h5 class="font-bold text-emerald-400">event_participants</h5>
+          <p class="text-[11px] text-slate-400 mt-1">id, event_id, user_id, status (Joined/Attended), joined_at</p>
+        </div>
+        <div class="p-3 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <h5 class="font-bold text-emerald-400">posts</h5>
+          <p class="text-[11px] text-slate-400 mt-1">id, user_id, title, content, category, likes_count, comments_count</p>
+        </div>
+        <div class="p-3 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <h5 class="font-bold text-emerald-400">post_likes / comments</h5>
+          <p class="text-[11px] text-slate-400 mt-1">post_id, user_id, comment, created_at. Unique key enforces 1 like/user</p>
+        </div>
+        <div class="p-3 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <h5 class="font-bold text-emerald-400">user_badges / badges</h5>
+          <p class="text-[11px] text-slate-400 mt-1">badge_code, user_id, points_required, icon, name, earned_at</p>
+        </div>
+        <div class="p-3 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <h5 class="font-bold text-emerald-400">notifications / points_log</h5>
+          <p class="text-[11px] text-slate-400 mt-1">user_id, points, reason, is_read, type, link, created_at</p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-900/50 border border-emerald-900/50 rounded-xl space-y-1 text-xs">
+        <h5 class="font-bold text-white flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-emerald-400 text-sm">key</span> Relational Integrity & Indexes
+        </h5>
+        <p class="text-slate-300">
+          Enforces SQLite <code class="font-mono text-emerald-300">PRAGMA foreign_keys = ON;</code> with cascading constraints. Indexes created on <code class="font-mono text-emerald-300">tracking_id</code>, <code class="font-mono text-emerald-300">user_id</code>, and geospatial coordinates for high-concurrency read operations.
+        </p>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Security & Role-Based Authorization -->
+    <div class="slide flex-col max-w-5xl mx-auto space-y-4 w-full" data-slide="6">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div>
+          <span class="text-xs font-mono text-emerald-400 font-bold uppercase">Security Posture</span>
+          <h3 class="text-2xl font-black text-white">Authentication, Authorization & Hardening</h3>
+        </div>
+        <span class="text-xs bg-slate-800 px-3 py-1 rounded text-slate-300 font-mono">Defense in Depth</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <div class="p-5 bg-slate-900/70 border border-slate-800 rounded-xl space-y-3">
+          <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+            <span class="material-symbols-outlined">lock</span> Stateless JWT Token Auth
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            HS256 signed JSON Web Tokens expire in 7 days. Payloads encapsulate user_id, role, and username. Verified via FastAPI dependency injection:
+          </p>
+          <div class="p-2.5 bg-slate-950 rounded font-mono text-[10px] text-emerald-300">
+            Depends(get_current_user)<br>
+            Depends(get_admin_user)
+          </div>
+        </div>
+
+        <div class="p-5 bg-slate-900/70 border border-slate-800 rounded-xl space-y-3">
+          <div class="flex items-center gap-2 text-teal-400 font-bold text-sm">
+            <span class="material-symbols-outlined">admin_panel_settings</span> Role-Based Access Control
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Strict segregation between <strong>Citizen Users</strong> and <strong>Administrators</strong>:
+          </p>
+          <ul class="text-xs text-slate-400 space-y-1">
+            <li>• Users can only edit/delete their own posts and organized events.</li>
+            <li>• Admins can moderate statuses, inspect stats, and block abusive users.</li>
+          </ul>
+        </div>
+
+        <div class="p-5 bg-slate-900/70 border border-slate-800 rounded-xl space-y-3">
+          <div class="flex items-center gap-2 text-purple-400 font-bold text-sm">
+            <span class="material-symbols-outlined">security</span> HTTP Security Headers
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Injected at ASGI middleware layer across all incoming web responses:
+          </p>
+          <div class="p-2.5 bg-slate-950 rounded font-mono text-[10px] text-slate-300 space-y-1">
+            <p>X-Content-Type-Options: nosniff</p>
+            <p>X-Frame-Options: SAMEORIGIN</p>
+            <p>X-XSS-Protection: 1; mode=block</p>
+            <p>Referrer-Policy: strict-origin</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3.5 bg-slate-900/50 border border-slate-800 rounded-xl text-xs text-slate-300">
+        <strong>Upload Sanitization:</strong> Strict extension whitelisting (.jpg, .jpeg, .png, .webp), 10 MB payload ceiling, and UUID4 path decoupling preventing path traversal vulnerabilities.
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Production Scalability Roadmap -->
+    <div class="slide flex-col max-w-5xl mx-auto space-y-4 w-full" data-slide="7">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div>
+          <span class="text-xs font-mono text-emerald-400 font-bold uppercase">Evolution & Growth</span>
+          <h3 class="text-2xl font-black text-white">Production Scalability & Cloud Roadmap</h3>
+        </div>
+        <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-800/60 px-3 py-1 rounded font-mono">10,000+ Concurrent QPS Target</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-xl space-y-2">
+          <h5 class="font-bold text-emerald-400 text-sm">Phase 1: Database Migration</h5>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Transition from SQLite to <strong>AWS Aurora PostgreSQL</strong> with <strong>PostGIS</strong> extension for sub-millisecond spatial bounding box queries and polygon geofencing.
+          </p>
+        </div>
+
+        <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-xl space-y-2">
+          <h5 class="font-bold text-teal-400 text-sm">Phase 2: Object Storage & CDN</h5>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Decouple local file storage to <strong>Amazon S3 / Cloudflare R2</strong> with Cloudflare global CDN edge caching for waste report images and certificates.
+          </p>
+        </div>
+
+        <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-xl space-y-2">
+          <h5 class="font-bold text-purple-400 text-sm">Phase 3: Async Queue & Caching</h5>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Introduce <strong>Redis</strong> cluster for caching leaderboard queries and <strong>Celery / RabbitMQ</strong> workers for asynchronous image classification and email alerts.
+          </p>
+        </div>
+      </div>
+
+      <div class="p-6 bg-gradient-to-r from-emerald-950 to-slate-900 border border-emerald-800/50 rounded-2xl text-center space-y-3">
+        <h4 class="text-xl font-black text-white">Building the Future of Community Cleanliness</h4>
+        <p class="text-xs text-slate-300 max-w-xl mx-auto">
+          EcoTrack combines elegant engineering, lightweight algorithms, and community psychology to make urban sustainability measurable and rewarding.
+        </p>
+        <div class="pt-2 flex justify-center gap-3">
+          <a href="/index.html" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition">
+            Experience Live App
+          </a>
+          <button onclick="goToSlide(1)" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition">
+            Restart Presentation
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Speaker Script Drawer (Toggled) -->
+  <aside id="speaker-drawer" class="hidden h-36 bg-slate-950 border-t border-emerald-900/80 px-8 py-3 overflow-y-auto text-xs z-30 transition">
+    <div class="max-w-4xl mx-auto flex items-start gap-4">
+      <div class="w-8 h-8 rounded-full bg-emerald-600/30 text-emerald-400 flex items-center justify-center shrink-0 font-mono font-bold">
+        🎤
+      </div>
+      <div class="space-y-1">
+        <h4 class="font-bold text-emerald-400 text-xs uppercase tracking-wider">Teleprompter Narration Script:</h4>
+        <p id="speaker-text" class="text-slate-200 text-sm leading-relaxed font-normal">
+          Loading script...
+        </p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Bottom Presentation Control Bar -->
+  <footer class="h-16 border-t border-slate-900 bg-slate-950 px-6 flex items-center justify-between z-20">
+    <div class="flex items-center gap-3">
+      <button onclick="prevSlide()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition">
+        <span class="material-symbols-outlined text-sm">arrow_back</span> Previous
+      </button>
+      <button onclick="nextSlide()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow">
+        Next <span class="material-symbols-outlined text-sm">arrow_forward</span>
+      </button>
+    </div>
+
+    <div class="text-xs text-slate-400 font-mono hidden sm:block">
+      Tip: Use <kbd class="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300">←</kbd> and <kbd class="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300">→</kbd> arrow keys to navigate slides
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span class="text-xs text-slate-500 font-mono">EcoTrack v2.0 Tech Talk</span>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Mermaid
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+
+    let currentSlide = 1;
+    const totalSlides = 7;
+
+    const scripts = {
+      1: "Welcome everyone! Today we are presenting the architecture and system design of EcoTrack. EcoTrack is a smart waste management platform built to bridge the gap between civic complaints and community cleanups. In this presentation, we will walk through our 4-tier service architecture, local AI computer vision pipeline, ACID-compliant database model, and scalability roadmap.",
+      2: "Here is our 4-tier system architecture. The Client Tier is an ultra-fast Vanilla ES6 Single Page Application under 75KB, communicating via REST with our Python 3.13 FastAPI backend. Our AI Engine extracts image features and spatial scores without relying on external paid APIs. Finally, our Persistence Tier stores data in a normalized SQLite database with foreign key cascading and media decoupled in a UUID-hashed directory.",
+      3: "Let's dive into our AI and algorithmic design. Rather than sending citizen images to slow external APIs, our local Computer Vision pipeline resizes images and calculates RGB luminance, color variance, and texture standard deviations to classify waste categories in under 40 milliseconds. Simultaneously, our Neighborhood Cleanliness Index algorithm calculates a live community health grade and optimizes green walking routes away from active dumps.",
+      4: "This sequence illustrates our waste reporting and gamification transaction lifecycle. When a citizen submits a waste photo, the image is sanitized and classified. The FastAPI gateway executes a database transaction that generates a unique tracking ID, awards 10 points to the user, logs the audit record to points_log, checks for milestone badge unlocks, and broadcasts real-time in-app notifications.",
+      5: "Our relational schema consists of 12 normalized tables with foreign key constraints and indexed lookup fields. We track users, waste reports, cleanup drives, participant attendance, community feed posts, comments, and gamification logs. This structure guarantees complete data consistency and enables sub-5 millisecond query execution.",
+      6: "Security is built into every layer. We utilize stateless HS256 JWT bearer tokens with 7-day lifespans, salted SHA-256 password hashes, and strict role-based access control distinguishing everyday citizens from municipal moderators. Our ASGI middleware injects security headers like X-Frame-Options, X-Content-Type-Options, and XSS Protection.",
+      7: "Finally, looking at our production scalability roadmap: EcoTrack's modular architecture can scale effortlessly to 10,000+ concurrent requests. We can migrate SQLite to AWS Aurora PostgreSQL with PostGIS for spatial queries, offload media to Amazon S3 or Cloudflare R2, and use Redis caching for real-time leaderboard calculations. Thank you for watching!"
+    };
+
+    const slideAudioFiles = {
+      1: "/audio/slide_01_title_and_vision.mp3",
+      2: "/audio/slide_02_high_level_architecture.mp3",
+      3: "/audio/slide_03_ai_vision_and_algorithms.mp3",
+      4: "/audio/slide_04_reporting_data_lifecycle.mp3",
+      5: "/audio/slide_05_relational_schema_design.mp3",
+      6: "/audio/slide_06_security_and_resilience.mp3",
+      7: "/audio/slide_07_scalability_and_roadmap.mp3"
+    };
+
+    let currentAudio = null;
+    let isPlaying = false;
+
+    function toggleAudio() {
+      if (isPlaying) {
+        if (currentAudio) currentAudio.pause();
+        isPlaying = false;
+        updateAudioButton(false);
+      } else {
+        playSlideAudio();
+      }
+    }
+
+    function playSlideAudio() {
+      if (currentAudio) {
+        currentAudio.pause();
+      }
+      const audioSrc = slideAudioFiles[currentSlide];
+      if (!audioSrc) return;
+
+      currentAudio = new Audio(audioSrc);
+      currentAudio.play().then(() => {
+        isPlaying = true;
+        updateAudioButton(true);
+      }).catch(err => {
+        console.warn("Audio playback notice:", err);
+      });
+
+      currentAudio.onended = () => {
+        isPlaying = false;
+        updateAudioButton(false);
+      };
+    }
+
+    function updateAudioButton(playing) {
+      const icon = document.getElementById("audio-icon");
+      const label = document.getElementById("audio-label");
+      const btn = document.getElementById("audio-btn");
+      if (!icon || !label || !btn) return;
+      if (playing) {
+        icon.innerText = "pause";
+        label.innerText = "Pause Voice";
+        btn.classList.add("bg-emerald-600");
+        btn.classList.remove("bg-emerald-800/80");
+      } else {
+        icon.innerText = "volume_up";
+        label.innerText = "Play Voiceover";
+        btn.classList.remove("bg-emerald-600");
+        btn.classList.add("bg-emerald-800/80");
+      }
+    }
+
+    function toggleSlide2View(view) {
+      const diag = document.getElementById('slide2-diagram-view');
+      const grid = document.getElementById('slide2-grid-view');
+      const btnD = document.getElementById('btn-s2-diag');
+      const btnG = document.getElementById('btn-s2-grid');
+      if (!diag || !grid || !btnD || !btnG) return;
+      if (view === 'diagram') {
+        diag.classList.remove('hidden');
+        grid.classList.add('hidden');
+        btnD.className = 'px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold transition shadow';
+        btnG.className = 'px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition';
+        if (window.mermaid) mermaid.run({ nodes: diag.querySelectorAll('.mermaid') });
+      } else {
+        diag.classList.add('hidden');
+        grid.classList.remove('hidden');
+        btnG.className = 'px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold transition shadow';
+        btnD.className = 'px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition';
+      }
+    }
+
+    function toggleSlide4View(view) {
+      const diag = document.getElementById('slide4-diagram-view');
+      const steps = document.getElementById('slide4-steps-view');
+      const btnD = document.getElementById('btn-s4-diag');
+      const btnS = document.getElementById('btn-s4-steps');
+      if (!diag || !steps || !btnD || !btnS) return;
+      if (view === 'diagram') {
+        diag.classList.remove('hidden');
+        steps.classList.add('hidden');
+        btnD.className = 'px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold transition shadow';
+        btnS.className = 'px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition';
+        if (window.mermaid) mermaid.run({ nodes: diag.querySelectorAll('.mermaid') });
+      } else {
+        diag.classList.add('hidden');
+        steps.classList.remove('hidden');
+        btnS.className = 'px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold transition shadow';
+        btnD.className = 'px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition';
+      }
+    }
+
+    function updateSlide() {
+      if (isPlaying) {
+        playSlideAudio();
+      }
+
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      const active = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
+      if (active) active.classList.add('active');
+
+      document.getElementById('slide-counter').innerText = `${currentSlide} / ${totalSlides}`;
+      document.getElementById('speaker-text').innerText = scripts[currentSlide] || "";
+
+      // Dynamic mermaid rendering on active slide
+      if (window.mermaid && active) {
+        setTimeout(() => {
+          const diagrams = active.querySelectorAll('.mermaid:not([data-processed="true"])');
+          if (diagrams.length > 0) {
+            mermaid.run({ nodes: diagrams });
+          }
+        }, 80);
+      }
+
+      // Update indicators
+      const ind = document.getElementById('slide-indicators');
+      ind.innerHTML = '';
+      for (let i = 1; i <= totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = `w-2 h-2 rounded-full cursor-pointer transition ${i === currentSlide ? 'bg-emerald-400 w-5' : 'bg-slate-700 hover:bg-slate-500'}`;
+        dot.onclick = () => goToSlide(i);
+        ind.appendChild(dot);
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(n) {
+      currentSlide = n;
+      updateSlide();
+    }
+
+    function toggleNotes() {
+      const drawer = document.getElementById('speaker-drawer');
+      const btn = document.getElementById('notes-btn');
+      drawer.classList.toggle('hidden');
+      if (drawer.classList.contains('hidden')) {
+        btn.classList.remove('bg-emerald-700', 'text-white');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      } else {
+        btn.classList.remove('bg-slate-800', 'text-slate-300');
+        btn.classList.add('bg-emerald-700', 'text-white');
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      }
+    });
+
+    // Initialize
+    updateSlide();
+  </script>
+
+</body>
+</html>

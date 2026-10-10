@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoTrack Signup</title>
+    <title>EcoTrack - Sign Up</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home,login" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home,login,arrow_back" />
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <nav>
         <div class="nav-con">
-       <div class="logo"><img src="images/bucket.png" alt="">EcoTrack</div> 
+       <a href="/" class="logo"><img src="images/bucket.png" alt="EcoTrack">EcoTrack</a> 
        <div class="links">
         <div class="link">
-            <a href=""> <span class="material-symbols-outlined">home</span>Home</a>
-            <a href="login.html"><span class="material-symbols-outlined">login</span>Login</a>
+            <a href="/"><span class="material-symbols-outlined">home</span>Home</a>
+            <a href="/login.html"><span class="material-symbols-outlined">login</span>Login</a>
         </div>
        </div>
         </div>
@@ -25,6 +25,12 @@
 <section id="sec">
 
     <div class="sign-container">
+
+        <div style="margin-bottom: 14px;">
+            <a href="/" style="display: inline-flex; align-items: center; gap: 6px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; opacity: 0.95; padding: 6px 12px; background: rgba(0,0,0,0.2); border-radius: 8px; backdrop-filter: blur(4px);">
+                <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span> Return to Home
+            </a>
+        </div>
 
         <div class="sign-comp">
              <h2>Create Account</h2>
@@ -46,7 +52,7 @@
                 Login with Google <i class="fa-brands fa-google"></i>
             </button>
              </form> 
-              <p>Already Have a Account? <a href="login.html"> Login</a></p>
+              <p>Already Have a Account? <a href="/login.html"> Login</a></p>
         </div>
 
     </div>

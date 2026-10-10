@@ -67,8 +67,11 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
 
-# Serve uploaded static images
+# Serve uploaded static images & generated voiceovers
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+AUDIO_DIR = BASE_DIR / "audio"
+AUDIO_DIR.mkdir(exist_ok=True)
+app.mount("/audio", StaticFiles(directory=str(AUDIO_DIR)), name="audio")
 
 # --- Helper Functions ---
 
@@ -234,6 +237,8 @@ async def upload_file(file: UploadFile = File(...)):
             "filename": filename,
             "url": f"/uploads/{filename}"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
@@ -788,48 +793,6 @@ def get_post_detail(post_id: int, current_user: Optional[dict] = Depends(get_opt
     
     conn.close()
     return post_dict
-
-@app.put("/api/posts/{post_id}")
-def update_post(post_id: int, data: PostCreateSchema, current_user: dict = Depends(get_current_user)):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT user_id FROM posts WHERE id = ?", (post_id,))
-    post = cursor.fetchone()
-    if not post:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Post not found.")
-    
-    if post["user_id"] != current_user["id"] and current_user["role"] != "admin":
-        conn.close()
-        raise HTTPException(status_code=403, detail="You can only edit your own posts.")
-        
-    cursor.execute("""
-        UPDATE posts
-        SET title = ?, content = ?, category = ?, image_url = ?, location = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-    """, (data.title, data.content, data.category, data.image_url, data.location, post_id))
-    conn.commit()
-    conn.close()
-    return {"status": "success", "message": "Post updated successfully."}
-
-@app.delete("/api/posts/{post_id}")
-def delete_post(post_id: int, current_user: dict = Depends(get_current_user)):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT user_id FROM posts WHERE id = ?", (post_id,))
-    post = cursor.fetchone()
-    if not post:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Post not found.")
-        
-    if post["user_id"] != current_user["id"] and current_user["role"] != "admin":
-        conn.close()
-        raise HTTPException(status_code=403, detail="You do not have permission to delete this post.")
-        
-    cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
-    conn.commit()
-    conn.close()
-    return {"status": "success", "message": "Post deleted successfully."}
 
 @app.post("/api/posts/{post_id}/like")
 def toggle_like_post(post_id: int, current_user: dict = Depends(get_current_user)):
@@ -1423,13 +1386,19 @@ def admin_toggle_block_user(user_id: int, admin_user: dict = Depends(get_admin_u
 # --- SPA Public Frontend Routing & Root Fallback ---
 
 @app.get("/")
+@app.get("/home")
+@app.get("/home.html")
+def read_home():
+    home_file = BASE_DIR / "home.html"
+    if home_file.exists():
+        return FileResponse(home_file)
+    return FileResponse(BASE_DIR / "index.html")
+
 @app.get("/index")
 @app.get("/index.html")
-def read_root():
-    index_file = BASE_DIR / "index.html"
-    if index_file.exists():
-        return FileResponse(index_file)
-    return {"message": "EcoTrack API is running!"}
+@app.get("/app")
+def read_index():
+    return FileResponse(BASE_DIR / "index.html")
 
 @app.get("/login")
 @app.get("/login.html")
@@ -1440,6 +1409,13 @@ def read_login():
 @app.get("/signup.html")
 def read_signup():
     return FileResponse(BASE_DIR / "signup.html")
+
+@app.get("/architecture")
+@app.get("/architecture.html")
+@app.get("/slides")
+@app.get("/slides.html")
+def read_architecture_presentation():
+    return FileResponse(BASE_DIR / "architecture_presentation.html")
 
 @app.get("/main")
 @app.get("/main.html")
